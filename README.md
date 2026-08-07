@@ -53,13 +53,38 @@ projects, and frontend development journey.
 ---
 
 ### 🔹 Project 3
-**Name:** Add Project Name Here
 
-**Description:**  
-Brief description of the project and its functionality.
+**Name:** Temperature Converter Website
+
+**Description:**
+An interactive temperature converter website built using HTML5, CSS3, and Vanilla JavaScript. The application converts temperature values between Celsius, Fahrenheit, and Kelvin with real-time input validation and user-friendly error handling.
+
+**Features:**
+
+* Celsius, Fahrenheit, and Kelvin conversion
+* Numeric input validation
+* Invalid input error message
+* Absolute zero validation
+* Clear conversion results with unit labels
+* Clean and centred user interface
+* Responsive design for different screen sizes
 
 **Technologies Used:**
-- Technologies used in project
+
+* HTML5
+* CSS3
+* JavaScript
+
+**Testing:**
+
+* TC1: Celsius conversion
+* TC2: Fahrenheit conversion
+* TC3: Invalid input validation
+* TC4: Absolute zero validation
+
+**Project Folder:**
+`WebDev-L1-TemperatureConverter`
+
 
 ---
 
