@@ -20,7 +20,15 @@ The project focuses on clean UI design, structured layout, and responsive behavi
 - CSS3
 
 ## Project Preview
-Added screenshots and demo video of the project.
+
+### Screenshot
+
+![NovaTech Landing Page](WebDev-L1-LandingPage/screenshots/final-homepage.png.png)
+
+### Demo Video
+
+Demo video is available in the project folder:
+`WebDev-L1-LandingPage/demo-video.mp4`
 
 ## Author
 Meerab Asif
