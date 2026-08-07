@@ -23,7 +23,7 @@ The project focuses on clean UI design, structured layout, and responsive behavi
 
 ### Screenshot
 
-![NovaTech Landing Page](WebDev-L1-LandingPage/screenshots/final-homepage.png.png)
+![NovaTech Landing Page](screenshots/final-homepage.png.png)
 
 ### Demo Video
 
