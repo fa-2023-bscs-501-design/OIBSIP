@@ -15,16 +15,16 @@ The purpose of this repository is to showcase my practical skills in web develop
 ## 🚀 Projects
 
 ### 🔹 Project 1
-**Name:** Add Project Name Here
+**Name:** NovaTech Landing Page
 
-**Description:**  
-Brief description of the project and its functionality.
+**Description:**
+A responsive landing page built using HTML5 and CSS3. The project includes a modern navigation bar, hero section, features section, about section, footer, and responsive design for different screen sizes.
 
 **Technologies Used:**
-- HTML
-- CSS
-- JavaScript
 
+- HTML5
+- CSS3
+- Git & GitHub
 ---
 
 ### 🔹 Project 2
