@@ -1,36 +1,26 @@
 # NovaTech Landing Page
 
-## 📌 Project Overview
+## Task
+Level 1 - Task 1: Landing Page
 
-NovaTech is a modern and responsive landing page created as part of the OIBSIP Web Development & Designing internship.
+## Description
+NovaTech is a responsive landing page created using HTML and CSS. 
+The project focuses on clean UI design, structured layout, and responsive behavior across different screen sizes.
 
-The website presents a fictional technology brand and demonstrates a clean user interface with a navigation bar, hero section, feature cards, about section, and footer.
-
-## 🛠️ Technologies Used
-
-- HTML5
-- CSS3
-- CSS Flexbox
-- CSS Grid
-- Responsive Design
-
-## ✨ Features
-
-- Sticky navigation bar
-- Hero section with call-to-action button
+## Features
+- Responsive navigation bar
+- Hero section
 - Features section
 - About section
-- Responsive layout for desktop and mobile devices
-- Smooth scrolling navigation
-- Consistent dark-themed design
-- Responsive feature cards
-- Footer section
+- Footer
+- Mobile and tablet responsive design
 
-## 📂 Project Structure
+## Technologies Used
+- HTML5
+- CSS3
 
-```text
-WebDev-L1-LandingPage/
-│
-├── index.html
-├── style.css
-└── README.md
+## Project Preview
+Added screenshots and demo video of the project.
+
+## Author
+Meerab Asif
