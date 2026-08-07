@@ -57,7 +57,7 @@ projects, and frontend development journey.
 **Name:** Temperature Converter Website
 
 **Description:**
-An interactive temperature converter website built using HTML5, CSS3, and Vanilla JavaScript. The application converts temperature values between Celsius, Fahrenheit, and Kelvin with real-time input validation and user-friendly error handling.
+An interactive temperature converter website built using HTML5, CSS3, and Vanilla JavaScript. The application converts temperature values between Celsius, Fahrenheit, and Kelvin with input validation and user-friendly error handling.
 
 **Features:**
 
@@ -67,7 +67,7 @@ An interactive temperature converter website built using HTML5, CSS3, and Vanill
 * Absolute zero validation
 * Clear conversion results with unit labels
 * Clean and centred user interface
-* Responsive design for different screen sizes
+* Responsive design
 
 **Technologies Used:**
 
