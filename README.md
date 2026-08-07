@@ -28,15 +28,27 @@ A responsive landing page built using HTML5 and CSS3. The project includes a mod
 ---
 
 ### 🔹 Project 2
-**Name:** Add Project Name Here
 
-**Description:**  
-Brief description of the project and its functionality.
+**Name:** Personal Portfolio Website
+
+**Description:**
+A responsive personal portfolio website created to showcase my skills,
+projects, and frontend development journey.
+
+**Features:**
+- Hero section with profile introduction
+- About Me section
+- Skills section
+- Projects showcase
+- Contact section
+- Responsive design for desktop and mobile
 
 **Technologies Used:**
-- React / Next.js
-- JavaScript
-- CSS
+- HTML5
+- CSS3
+
+**Project Folder:**
+`WebDev-L1-Portfolio`
 
 ---
 
