@@ -1,0 +1,564 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #f4f1eb;
+    --surface: #ffffff;
+    --dark: #20201e;
+    --muted: #77736d;
+    --border: #e3ded5;
+    --accent: #b77932;
+    --accent-light: #f3e3cf;
+    --success: #4d765c;
+    --danger: #b64a43;
+    --shadow: 0 15px 40px rgba(32, 32, 30, 0.08);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+
+    font-family: "Segoe UI", Arial, sans-serif;
+
+    background: var(--bg);
+    color: var(--dark);
+
+    line-height: 1.6;
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.header {
+    padding: 24px 8%;
+
+    background: var(--dark);
+    color: #ffffff;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand {
+    max-width: 1200px;
+    margin: auto;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-mark {
+    width: 42px;
+    height: 42px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+
+    color: var(--accent);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.brand h1 {
+    font-family: Georgia, serif;
+    font-size: 1.45rem;
+    letter-spacing: 1px;
+}
+
+.brand p {
+    color: #aaa69f;
+    font-size: 0.8rem;
+}
+
+
+/* ================================
+   MAIN
+================================ */
+
+.app-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 80px 8%;
+}
+
+
+/* ================================
+   INTRO
+================================ */
+
+.intro {
+    margin-bottom: 50px;
+}
+
+.eyebrow {
+    display: inline-block;
+
+    margin-bottom: 15px;
+
+    color: var(--accent);
+
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+.intro h2 {
+    margin-bottom: 20px;
+
+    font-family: Georgia, serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    line-height: 0.98;
+    font-weight: normal;
+}
+
+.intro p {
+    max-width: 600px;
+
+    color: var(--muted);
+    font-size: 1.05rem;
+}
+
+
+/* ================================
+   TASK INPUT
+================================ */
+
+.task-input-section {
+    margin-bottom: 70px;
+}
+
+.task-form {
+    display: flex;
+    gap: 12px;
+
+    padding: 10px;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    box-shadow: var(--shadow);
+}
+
+.task-form input {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 16px 18px;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    color: var(--dark);
+    font-size: 1rem;
+}
+
+.task-form input::placeholder {
+    color: #aaa59d;
+}
+
+.task-form button {
+    padding: 0 28px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: var(--dark);
+    color: #ffffff;
+
+    font-size: 0.95rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+.task-form button:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+}
+
+
+/* ================================
+   TASK LISTS
+================================ */
+
+.task-lists {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.task-column {
+    min-width: 0;
+
+    padding: 30px;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+
+    box-shadow: var(--shadow);
+}
+
+.completed-column {
+    background: #faf9f6;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    margin-bottom: 25px;
+
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.list-label {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: var(--accent);
+
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.list-header h3 {
+    font-family: Georgia, serif;
+    font-size: 1.7rem;
+    font-weight: normal;
+}
+
+.task-count {
+    padding: 6px 10px;
+
+    background: var(--accent-light);
+    color: var(--accent);
+
+    border-radius: 20px;
+
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+
+/* ================================
+   TASK ITEMS
+================================ */
+
+.task-list {
+    display: grid;
+    gap: 12px;
+}
+
+.task-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 14px;
+
+    padding: 16px;
+
+    background: #faf9f6;
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    animation: taskAppear 0.3s ease;
+}
+
+.completed-column .task-item {
+    background: #f3f6f3;
+}
+
+@keyframes taskAppear {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ================================
+   COMPLETE BUTTON
+================================ */
+
+.complete-btn {
+    width: 24px;
+    height: 24px;
+
+    display: grid;
+    place-items: center;
+
+    border: 2px solid #c9c4bc;
+    border-radius: 50%;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+.complete-btn:hover {
+    border-color: var(--success);
+}
+
+.completed-column .complete-btn {
+    border-color: var(--success);
+    background: var(--success);
+}
+
+
+/* ================================
+   TASK CONTENT
+================================ */
+
+.task-content {
+    min-width: 0;
+}
+
+.task-text {
+    margin-bottom: 4px;
+
+    color: var(--dark);
+
+    font-size: 0.98rem;
+    word-break: break-word;
+}
+
+.completed-column .task-text {
+    color: #777d77;
+    text-decoration: line-through;
+}
+
+.task-time {
+    color: #99948c;
+    font-size: 0.72rem;
+}
+
+
+/* ================================
+   TASK ACTIONS
+================================ */
+
+.task-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.task-actions button {
+    padding: 7px 9px;
+
+    border: 1px solid var(--border);
+    border-radius: 6px;
+
+    background: #ffffff;
+
+    font-size: 0.72rem;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+.edit-btn {
+    color: var(--accent);
+}
+
+.edit-btn:hover {
+    background: var(--accent-light);
+}
+
+.delete-btn {
+    color: var(--danger);
+}
+
+.delete-btn:hover {
+    background: #f8e3e1;
+}
+
+
+/* ================================
+   INLINE EDIT
+================================ */
+
+.edit-input {
+    width: 100%;
+
+    padding: 7px 9px;
+
+    border: 1px solid var(--accent);
+    border-radius: 5px;
+
+    outline: none;
+
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+
+/* ================================
+   EMPTY STATES
+================================ */
+
+.empty-state {
+    padding: 50px 20px;
+
+    text-align: center;
+
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+}
+
+.empty-icon {
+    display: block;
+
+    margin-bottom: 12px;
+
+    color: var(--accent);
+
+    font-size: 2rem;
+}
+
+.empty-state h4 {
+    margin-bottom: 5px;
+
+    font-family: Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+}
+
+.empty-state p {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+
+/* ================================
+   FOOTER
+================================ */
+
+.footer {
+    padding: 30px 8%;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    background: var(--dark);
+    color: #ffffff;
+
+    font-size: 0.8rem;
+}
+
+.footer span {
+    color: #99958e;
+}
+
+
+/* ================================
+   RESPONSIVE DESIGN
+================================ */
+
+@media (max-width: 900px) {
+
+    .app-container {
+        padding: 65px 6%;
+    }
+
+    .task-lists {
+        grid-template-columns: 1fr;
+    }
+
+    .intro h2 {
+        font-size: clamp(3rem, 10vw, 5rem);
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .header {
+        padding: 20px 6%;
+    }
+
+    .brand p {
+        display: none;
+    }
+
+    .app-container {
+        padding: 50px 6%;
+    }
+
+    .intro {
+        margin-bottom: 35px;
+    }
+
+    .intro h2 {
+        font-size: 3.2rem;
+    }
+
+    .task-form {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .task-form button {
+        min-height: 50px;
+    }
+
+    .task-column {
+        padding: 20px;
+    }
+
+    .list-header {
+        align-items: center;
+    }
+
+    .list-header h3 {
+        font-size: 1.4rem;
+    }
+
+    .task-item {
+        grid-template-columns: auto 1fr;
+    }
+
+    .task-actions {
+        grid-column: 2;
+    }
+
+    .footer {
+        flex-direction: column;
+        gap: 8px;
+
+        text-align: center;
+    }
+}

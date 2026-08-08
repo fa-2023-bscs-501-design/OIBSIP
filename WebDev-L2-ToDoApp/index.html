@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TaskFlow | To-Do Web App</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <span class="brand-mark">✓</span>
+
+            <div>
+                <h1>TaskFlow</h1>
+                <p>Organize your day, one task at a time.</p>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- Main Application -->
+    <main class="app-container">
+
+        <!-- Welcome Section -->
+        <section class="intro">
+            <div>
+                <span class="eyebrow">MY DAILY PLANNER</span>
+
+                <h2>Stay focused.<br>Get things done.</h2>
+
+                <p>
+                    Add your tasks, keep track of what needs to be done,
+                    and celebrate your progress.
+                </p>
+            </div>
+        </section>
+
+
+        <!-- Add Task -->
+        <section class="task-input-section">
+
+            <form id="taskForm" class="task-form">
+
+                <input
+                    type="text"
+                    id="taskInput"
+                    placeholder="What needs to be done?"
+                    autocomplete="off"
+                >
+
+                <button type="submit" id="addTaskBtn">
+                    Add Task
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- Task Lists -->
+        <section class="task-lists">
+
+            <!-- Pending Tasks -->
+            <div class="task-column">
+
+                <div class="list-header">
+                    <div>
+                        <span class="list-label">01</span>
+                        <h3>Pending Tasks</h3>
+                    </div>
+
+                    <span id="pendingCount" class="task-count">
+                        0 pending
+                    </span>
+                </div>
+
+                <div id="pendingTasks" class="task-list">
+
+                    <div class="empty-state" id="pendingEmpty">
+                        <span class="empty-icon">○</span>
+
+                        <h4>No pending tasks</h4>
+
+                        <p>
+                            You're all caught up. Add a new task to get started.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Completed Tasks -->
+            <div class="task-column completed-column">
+
+                <div class="list-header">
+                    <div>
+                        <span class="list-label">02</span>
+                        <h3>Completed Tasks</h3>
+                    </div>
+
+                    <span id="completedCount" class="task-count">
+                        0 completed
+                    </span>
+                </div>
+
+                <div id="completedTasks" class="task-list">
+
+                    <div class="empty-state" id="completedEmpty">
+                        <span class="empty-icon">✓</span>
+
+                        <h4>No completed tasks</h4>
+
+                        <p>
+                            Completed tasks will appear here.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+
+        <p>
+            TaskFlow &copy; 2026
+        </p>
+
+        <span>
+            Built with HTML, CSS & JavaScript
+        </span>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
