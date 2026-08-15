@@ -1,899 +1,2650 @@
-
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
+import AdminDashboard from "./AdminDashboard";
+
+/* =========================================================
+   PIZZAS
+========================================================= */
+
+const pizzas = [
+  {
+    id: 1,
+    name: "Classic Margherita",
+    category: "Classic",
+    price: 899,
+    emoji: "🍕",
+    image:
+      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=800&q=80",
+    description:
+      "Fresh mozzarella, tomato sauce and basil.",
+  },
+  {
+    id: 2,
+    name: "Pepperoni Feast",
+    category: "Popular",
+    price: 1199,
+    emoji: "🍕",
+    image:
+      "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=800&q=80",
+    description:
+      "Loaded with spicy pepperoni and melted cheese.",
+  },
+  {
+    id: 3,
+    name: "Chicken Tikka",
+    category: "Chicken",
+    price: 1299,
+    emoji: "🍗",
+    image:
+      "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=800&q=80",
+    description:
+      "Tender chicken tikka with creamy cheese.",
+  },
+  {
+    id: 4,
+    name: "Creamy Chicken",
+    category: "Chicken",
+    price: 1399,
+    emoji: "🍗",
+    image:
+      "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80",
+    description:
+      "Creamy sauce, chicken and mozzarella cheese.",
+  },
+  {
+    id: 5,
+    name: "Veggie Supreme",
+    category: "Veggie",
+    price: 1099,
+    emoji: "🥦",
+    image:
+      "https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=800&q=80",
+    description:
+      "Fresh vegetables with herbs and mozzarella.",
+  },
+  {
+    id: 6,
+    name: "Cheese Lovers",
+    category: "Classic",
+    price: 1149,
+    emoji: "🧀",
+    image:
+      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=800&q=80",
+    description:
+      "A rich blend of delicious melted cheeses.",
+  },
+];
+
+const categories = [
+  "All",
+  "Popular",
+  "Classic",
+  "Chicken",
+  "Veggie",
+];
+
+/* =========================================================
+   BUILDER OPTIONS
+========================================================= */
+
+const sizePrices = {
+  Small: 0,
+  Medium: 200,
+  Large: 400,
+};
+
+const crustPrices = {
+  "Classic Crust": 0,
+  "Cheese Burst": 250,
+  "Thin Crust": 100,
+};
+
+const saucePrices = {
+  "Tomato Sauce": 0,
+  "BBQ Sauce": 100,
+  "Creamy Garlic": 150,
+};
+
+const cheesePrices = {
+  Mozzarella: 0,
+  "Extra Cheese": 180,
+  "Cheddar Blend": 220,
+};
+
+const toppingOptions = [
+  {
+    name: "Pepperoni",
+    price: 150,
+    emoji: "🥩",
+  },
+  {
+    name: "Chicken",
+    price: 180,
+    emoji: "🍗",
+  },
+  {
+    name: "Mushrooms",
+    price: 100,
+    emoji: "🍄",
+  },
+  {
+    name: "Olives",
+    price: 80,
+    emoji: "🫒",
+  },
+  {
+    name: "Jalapeños",
+    price: 80,
+    emoji: "🌶️",
+  },
+  {
+    name: "Onions",
+    price: 60,
+    emoji: "🧅",
+  },
+];
+
+/* =========================================================
+   APP
+========================================================= */
 
 function App() {
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] =
+    useState("All");
 
-  const [builderOpen, setBuilderOpen] = useState(false);
+  const [builderOpen, setBuilderOpen] =
+    useState(false);
 
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
 
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState("");
-  const [loginEmail, setLoginEmail] = useState("");
+    const [resetPassword, setResetPassword] = useState("");
+const [confirmResetPassword, setConfirmResetPassword] = useState("");
+const [resetLoading, setResetLoading] = useState(false);
+const [resetMessage, setResetMessage] = useState("");
+const [resetError, setResetError] = useState("");
 
-  const [size, setSize] = useState("Medium");
-  const [crust, setCrust] = useState("Classic");
-  const [sauce, setSauce] = useState("Tomato");
-  const [cheese, setCheese] = useState("Mozzarella");
-  const [toppings, setToppings] = useState([]);
 
-  const pizzas = [
-    {
-      name: "Margherita",
-      description: "Fresh tomato, mozzarella & basil",
-      price: 899,
-      category: "Classic",
-      emoji: "🍅",
-    },
-    {
-      name: "Pepperoni",
-      description: "Loaded pepperoni with melted mozzarella",
-      price: 1199,
-      category: "Popular",
-      emoji: "🍕",
-    },
-    {
-      name: "Garden Fresh",
-      description: "Bell peppers, olives, onions & mushrooms",
-      price: 1099,
-      category: "Veggie",
-      emoji: "🥦",
-    },
-    {
-      name: "BBQ Chicken",
-      description: "Grilled chicken, BBQ sauce & mozzarella",
-      price: 1299,
-      category: "Popular",
-      emoji: "🍗",
-    },
-    {
-      name: "Four Cheese",
-      description: "Mozzarella, cheddar, parmesan & gouda",
-      price: 1249,
-      category: "Classic",
-      emoji: "🧀",
-    },
-    {
-      name: "Spicy Veggie",
-      description: "Jalapeños, peppers, onions & spicy sauce",
-      price: 1149,
-      category: "Veggie",
-      emoji: "🌶️",
-    },
-  ];
+  /* =======================================================
+     AUTH
+  ======================================================= */
 
-  const categories = ["All", "Popular", "Classic", "Veggie"];
+  const [loginOpen, setLoginOpen] =
+    useState(false);
 
-  const toppingOptions = [
-    { name: "Pepperoni", price: 150, emoji: "🍕" },
-    { name: "Mushrooms", price: 100, emoji: "🍄" },
-    { name: "Olives", price: 100, emoji: "🫒" },
-    { name: "Jalapeños", price: 120, emoji: "🌶️" },
-    { name: "Onions", price: 80, emoji: "🧅" },
-    { name: "Bell Peppers", price: 100, emoji: "🫑" },
-  ];
+  const [registerMode, setRegisterMode] =
+    useState(false);
 
-  const sizePrices = {
-    Small: 0,
-    Medium: 200,
-    Large: 400,
-  };
-
-  const crustPrices = {
-    Classic: 0,
-    "Thin Crust": 100,
-    "Cheese Burst": 250,
-  };
-
-  const saucePrices = {
-    Tomato: 0,
-    BBQ: 80,
-    "Spicy Garlic": 100,
-  };
-
-  const cheesePrices = {
-    Mozzarella: 0,
-    Cheddar: 100,
-    "Four Cheese": 200,
-  };
-
-  const filteredPizzas =
-    activeCategory === "All"
-      ? pizzas
-      : pizzas.filter(
-          (pizza) => pizza.category === activeCategory
-        );
-
-  const toppingsPrice = toppings.reduce((total, toppingName) => {
-    const topping = toppingOptions.find(
-      (item) => item.name === toppingName
+  const [isLoggedIn, setIsLoggedIn] =
+    useState(() =>
+      Boolean(
+        localStorage.getItem(
+          "pizzaCraftToken"
+        )
+      )
     );
 
-    return total + (topping ? topping.price : 0);
-  }, 0);
+  const [userName, setUserName] =
+    useState("");
 
-  const totalPrice =
-    899 +
-    sizePrices[size] +
-    crustPrices[crust] +
-    saucePrices[sauce] +
-    cheesePrices[cheese] +
-    toppingsPrice;
+  const [userRole, setUserRole] =
+    useState("");
 
-  const cartCount = cart.reduce(
-    (total, item) => total + item.quantity,
-    0
+  const [loginEmail, setLoginEmail] =
+    useState("");
+
+  const [loginPassword, setLoginPassword] =
+    useState("");
+
+  const [registerName, setRegisterName] =
+    useState("");
+
+  const [registerEmail, setRegisterEmail] =
+    useState("");
+
+  const [registerPassword, setRegisterPassword] =
+    useState("");
+
+  const [authLoading, setAuthLoading] =
+    useState(false);
+
+    const [resendEmail, setResendEmail] = useState("");
+const [resendLoading, setResendLoading] = useState(false);
+const [resendMessage, setResendMessage] = useState("");
+const [resendError, setResendError] = useState("");
+
+  /* =======================================================
+     EMAIL VERIFICATION
+  ======================================================= */
+
+  const [
+    emailVerificationStatus,
+    setEmailVerificationStatus,
+  ] = useState("idle");
+
+  const [
+    emailVerificationMessage,
+    setEmailVerificationMessage,
+  ] = useState("");
+
+  
+
+
+  /* =======================================================
+     BUILDER
+  ======================================================= */
+
+  const [size, setSize] =
+    useState("Medium");
+
+  const [crust, setCrust] =
+    useState("Classic Crust");
+
+  const [sauce, setSauce] =
+    useState("Tomato Sauce");
+
+  const [cheese, setCheese] =
+    useState("Mozzarella");
+
+  const [toppings, setToppings] =
+    useState([]);
+
+  /* =======================================================
+     ORDERS / ADMIN / INVENTORY
+  ======================================================= */
+
+  const [myOrdersOpen, setMyOrdersOpen] =
+    useState(false);
+
+  const [adminOpen, setAdminOpen] =
+    useState(false);
+
+  const [inventoryOpen, setInventoryOpen] =
+    useState(false);
+
+  const [inventory, setInventory] =
+    useState([]);
+
+  const [inventoryLoading, setInventoryLoading] =
+    useState(false);
+
+  const [orders, setOrders] = useState(() => {
+    try {
+      return (
+        JSON.parse(
+          localStorage.getItem(
+            "pizzaCraftOrders"
+          )
+        ) || []
+      );
+    } catch {
+      return [];
+    }
+  });
+
+  /* =========================================================
+     EMAIL VERIFICATION
+  ========================================================= */
+
+  useEffect(() => {
+  const path = window.location.pathname;
+
+  if (path !== "/verify-email") {
+    return;
+  }
+
+  const params = new URLSearchParams(
+    window.location.search
   );
 
-  const cartTotal = cart.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
+  const token = params.get("token");
 
-  const toggleTopping = (toppingName) => {
-    setToppings((current) =>
-      current.includes(toppingName)
-        ? current.filter((item) => item !== toppingName)
-        : [...current, toppingName]
+  if (!token) {
+    setEmailVerificationStatus("error");
+    setEmailVerificationMessage(
+      "Verification token is missing."
     );
-  };
+    return;
+  }
 
-  const scrollToMenu = () => {
-    document.getElementById("menu")?.scrollIntoView({
-      behavior: "smooth",
-    });
-  };
+  const verifyUserEmail = async () => {
+    try {
+      setEmailVerificationStatus("loading");
 
-  const openBuilder = () => {
-    setBuilderOpen(true);
-
-    setTimeout(() => {
-      document.getElementById("builder")?.scrollIntoView({
-        behavior: "smooth",
-      });
-    }, 50);
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-
-    if (!userName.trim() || !loginEmail.trim()) {
-      return;
-    }
-
-    setIsLoggedIn(true);
-    setLoginOpen(false);
-  };
-
-  const requireLogin = () => {
-    if (!isLoggedIn) {
-      setLoginOpen(true);
-      return false;
-    }
-
-    return true;
-  };
-
-  const addPizzaToCart = (pizza) => {
-    if (!requireLogin()) return;
-
-    setCart((currentCart) => {
-      const existingItem = currentCart.find(
-        (item) => item.name === pizza.name
+      const response = await fetch(
+        `http://localhost:5000/api/auth/verify-email?token=${encodeURIComponent(
+          token
+        )}`
       );
 
-      if (existingItem) {
-        return currentCart.map((item) =>
-          item.name === pizza.name
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-              }
-            : item
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message ||
+            "Email verification failed."
         );
       }
 
-      return [
-        ...currentCart,
-        {
-          ...pizza,
-          quantity: 1,
-        },
-      ];
-    });
+      setEmailVerificationStatus("success");
 
-    setCartOpen(true);
+      setEmailVerificationMessage(
+        data.message ||
+          "Email verified successfully. You can now login."
+      );
+    } catch (error) {
+      console.error(
+        "Email verification error:",
+        error
+      );
+
+      setEmailVerificationStatus("error");
+
+      setEmailVerificationMessage(
+        error.message ||
+          "Email verification failed."
+      );
+    }
   };
 
-  const openCart = () => {
-    if (!requireLogin()) return;
+  verifyUserEmail();
+}, []);
+  /* =========================================================
+     LOAD USER
+  ========================================================= */
 
-    setCartOpen(true);
-  };
-
-  const addToOrder = () => {
-    if (!requireLogin()) return;
-
-    const customPizza = {
-      name: `${size} ${crust} Pizza`,
-      description: `${sauce} sauce • ${cheese} • ${
-        toppings.length
-          ? toppings.join(", ")
-          : "No extra toppings"
-      }`,
-      price: totalPrice,
-      emoji: "🍕",
-      quantity: 1,
-    };
-
-    setCart((currentCart) => [
-      ...currentCart,
-      customPizza,
-    ]);
-
-    setCartOpen(true);
-  };
-
-  const increaseQuantity = (index) => {
-    setCart((currentCart) =>
-      currentCart.map((item, itemIndex) =>
-        itemIndex === index
-          ? {
-              ...item,
-              quantity: item.quantity + 1,
-            }
-          : item
-      )
-    );
-  };
-
-  const decreaseQuantity = (index) => {
-    setCart((currentCart) =>
-      currentCart
-        .map((item, itemIndex) =>
-          itemIndex === index
-            ? {
-                ...item,
-                quantity: item.quantity - 1,
-              }
-            : item
+  useEffect(() => {
+    try {
+      const savedUser = JSON.parse(
+        localStorage.getItem(
+          "pizzaCraftUser"
         )
-        .filter((item) => item.quantity > 0)
-    );
-  };
+      );
 
-  const removeFromCart = (index) => {
-    setCart((currentCart) =>
-      currentCart.filter(
-        (_, itemIndex) => itemIndex !== index
+      if (savedUser) {
+        setUserName(
+          savedUser.name ||
+            savedUser.username ||
+            savedUser.email?.split("@")[0] ||
+            ""
+        );
+
+        setUserRole(
+          savedUser.role || ""
+        );
+      }
+    } catch {
+      setUserName("");
+      setUserRole("");
+    }
+
+    if (
+      localStorage.getItem(
+        "pizzaCraftToken"
       )
-    );
-  };
+    ) {
+      loadMyOrders();
+    }
+  }, []);
 
-  const handleCheckout = () => {
+  /* =========================================================
+     REAL-TIME ORDER STATUS POLLING
+  ========================================================= */
+
+  useEffect(() => {
     if (!isLoggedIn) {
-      setLoginOpen(true);
       return;
     }
 
-    if (cart.length === 0) return;
+    const interval = setInterval(() => {
+      loadMyOrders();
+    }, 5000);
 
-    alert(
-      `Thank you, ${userName}! 🍕\n\nYour order total is Rs. ${cartTotal}.\n\nYour PizzaCraft order has been placed successfully!`
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isLoggedIn]);
+
+  /* =========================================================
+     LOAD MY ORDERS
+  ========================================================= */
+
+  const loadMyOrders = async () => {
+    try {
+      const token =
+        localStorage.getItem(
+          "pizzaCraftToken"
+        );
+
+      if (!token) {
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:5000/api/orders",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to load orders."
+        );
+      }
+
+      setOrders(data.orders || []);
+    } catch (error) {
+      console.error(
+        "Load orders error:",
+        error
+      );
+    }
+  };
+
+  /* =========================================================
+     LOAD INVENTORY
+  ========================================================= */
+
+  const loadInventory = async () => {
+    try {
+      setInventoryLoading(true);
+
+      const token =
+        localStorage.getItem(
+          "pizzaCraftToken"
+        );
+
+      if (!token) {
+        setInventoryLoading(false);
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:5000/api/inventory",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to load inventory."
+        );
+      }
+
+      setInventory(
+        data.inventory || []
+      );
+    } catch (error) {
+      console.error(
+        "Load inventory error:",
+        error
+      );
+
+      alert(
+        error.message ||
+          "Failed to load inventory."
+      );
+    } finally {
+      setInventoryLoading(false);
+    }
+  };
+
+  /* =========================================================
+     UPDATE INVENTORY STOCK
+  ========================================================= */
+
+  const updateInventoryStock = async (
+    id,
+    newStock
+  ) => {
+    try {
+      const token =
+        localStorage.getItem(
+          "pizzaCraftToken"
+        );
+
+      if (!token) {
+        alert(
+          "Please login again."
+        );
+        return;
+      }
+
+      const stock = Number(newStock);
+
+      if (
+        Number.isNaN(stock) ||
+        stock < 0
+      ) {
+        alert(
+          "Please enter a valid stock value."
+        );
+        return;
+      }
+
+      const response = await fetch(
+        `http://localhost:5000/api/inventory/${id}/stock`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type":
+              "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            stock,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to update stock."
+        );
+      }
+
+      setInventory(
+        (currentInventory) =>
+          currentInventory.map(
+            (item) =>
+              item._id === id
+                ? data.item
+                : item
+          )
+      );
+
+      alert(
+        "Stock updated successfully."
+      );
+    } catch (error) {
+      console.error(
+        "Update stock error:",
+        error
+      );
+
+      alert(
+        error.message ||
+          "Something went wrong while updating stock."
+      );
+    }
+  };
+
+  /* =========================================================
+     UPDATE LOW STOCK THRESHOLD
+  ========================================================= */
+
+  const updateInventoryThreshold =
+    async (id, newThreshold) => {
+      try {
+        const token =
+          localStorage.getItem(
+            "pizzaCraftToken"
+          );
+
+        if (!token) {
+          alert(
+            "Please login again."
+          );
+          return;
+        }
+
+        const lowStockThreshold =
+          Number(newThreshold);
+
+        if (
+          Number.isNaN(
+            lowStockThreshold
+          ) ||
+          lowStockThreshold < 0
+        ) {
+          alert(
+            "Please enter a valid threshold."
+          );
+          return;
+        }
+
+        const response = await fetch(
+          `http://localhost:5000/api/inventory/${id}/threshold`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type":
+                "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              lowStockThreshold,
+            }),
+          }
+        );
+
+        const data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.message ||
+              "Failed to update threshold."
+          );
+        }
+
+        setInventory(
+          (currentInventory) =>
+            currentInventory.map(
+              (item) =>
+                item._id === id
+                  ? data.item
+                  : item
+            )
+        );
+
+        alert(
+          "Low-stock threshold updated successfully."
+        );
+      } catch (error) {
+        console.error(
+          "Update threshold error:",
+          error
+        );
+
+        alert(
+          error.message ||
+            "Something went wrong while updating threshold."
+        );
+      }
+    };
+
+  /* =========================================================
+     FILTERED PIZZAS
+  ========================================================= */
+
+  const filteredPizzas = useMemo(() => {
+    if (
+      activeCategory === "All"
+    ) {
+      return pizzas;
+    }
+
+    return pizzas.filter(
+      (pizza) =>
+        pizza.category ===
+        activeCategory
+    );
+  }, [activeCategory]);
+
+  /* =========================================================
+     BUILDER PRICE
+  ========================================================= */
+
+  const builderPrice = useMemo(() => {
+    const toppingsTotal =
+      toppings.reduce(
+        (total, toppingName) => {
+          const topping =
+            toppingOptions.find(
+              (item) =>
+                item.name ===
+                toppingName
+            );
+
+          return (
+            total +
+            (topping?.price || 0)
+          );
+        },
+        0
+      );
+
+    return (
+      999 +
+      sizePrices[size] +
+      crustPrices[crust] +
+      saucePrices[sauce] +
+      cheesePrices[cheese] +
+      toppingsTotal
+    );
+  }, [
+    size,
+    crust,
+    sauce,
+    cheese,
+    toppings,
+  ]);
+
+  /* =========================================================
+     NAVIGATION
+  ========================================================= */
+
+  const closeLargeSections = () => {
+    setAdminOpen(false);
+    setInventoryOpen(false);
+    setMyOrdersOpen(false);
+  };
+
+  const scrollToSection = (id) => {
+    closeLargeSections();
+
+    setTimeout(() => {
+      const element =
+        document.getElementById(id);
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 50);
+  };
+
+  const scrollToMenu = () => {
+    setActiveCategory("All");
+    scrollToSection("menu");
+  };
+
+  const openBuilder = () => {
+    closeLargeSections();
+
+    setBuilderOpen(true);
+
+    setTimeout(() => {
+      const element =
+        document.querySelector(
+          ".pizza-builder"
+        );
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 50);
+  };
+
+  /* =========================================================
+     AUTH HELPERS
+  ========================================================= */
+
+  const openLogin = () => {
+    setRegisterMode(false);
+    setLoginOpen(true);
+  };
+
+  const openRegister = () => {
+    setRegisterMode(true);
+    setLoginOpen(true);
+  };
+
+  const closeLogin = () => {
+    setLoginOpen(false);
+
+    setLoginEmail("");
+    setLoginPassword("");
+
+    setRegisterName("");
+    setRegisterEmail("");
+    setRegisterPassword("");
+  };
+
+  /* =========================================================
+     REGISTER
+  ========================================================= */
+
+  const handleRegister = async (
+    event
+  ) => {
+    event.preventDefault();
+
+    if (
+      !registerName ||
+      !registerEmail ||
+      !registerPassword
+    ) {
+      alert(
+        "Please fill all fields."
+      );
+      return;
+    }
+
+    try {
+      setAuthLoading(true);
+
+      const response = await fetch(
+        "http://localhost:5000/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            name: registerName,
+            email: registerEmail,
+            password:
+              registerPassword,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Registration failed."
+        );
+      }
+
+      alert(
+        "Registration successful! Please login."
+      );
+
+      setRegisterMode(false);
+      setLoginEmail(
+        registerEmail
+      );
+
+      setRegisterName("");
+      setRegisterEmail("");
+      setRegisterPassword("");
+    } catch (error) {
+      alert(
+        error.message ||
+          "Registration failed."
+      );
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  /* =========================================================
+     LOGIN
+  ========================================================= */
+
+  const handleLogin = async (
+    event
+  ) => {
+    event.preventDefault();
+
+    if (
+      !loginEmail ||
+      !loginPassword
+    ) {
+      alert(
+        "Please enter email and password."
+      );
+      return;
+    }
+
+    try {
+      setAuthLoading(true);
+
+      const response = await fetch(
+        "http://localhost:5000/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            email: loginEmail,
+            password:
+              loginPassword,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Login failed."
+        );
+      }
+
+      if (data.token) {
+        localStorage.setItem(
+          "pizzaCraftToken",
+          data.token
+        );
+      }
+
+      if (data.user) {
+        localStorage.setItem(
+          "pizzaCraftUser",
+          JSON.stringify(
+            data.user
+          )
+        );
+
+        setUserName(
+          data.user.name ||
+            data.user.username ||
+            data.user.email?.split(
+              "@"
+            )[0] ||
+            ""
+        );
+
+        setUserRole(
+          data.user.role || ""
+        );
+      } else {
+        const fallbackUser = {
+          name:
+            loginEmail.split(
+              "@"
+            )[0],
+          email: loginEmail,
+          role: "",
+        };
+
+        localStorage.setItem(
+          "pizzaCraftUser",
+          JSON.stringify(
+            fallbackUser
+          )
+        );
+
+        setUserName(
+          fallbackUser.name
+        );
+
+        setUserRole("");
+      }
+
+      setIsLoggedIn(true);
+
+      closeLogin();
+
+      await loadMyOrders();
+
+      alert(
+        "Login successful! Welcome to PizzaCraft 🍕"
+      );
+    } catch (error) {
+      alert(
+        error.message ||
+          "Login failed."
+      );
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+  const email = resendEmail.trim();
+
+  if (!email) {
+    setResendError("Please enter your email address.");
+    setResendMessage("");
+    return;
+  }
+
+  try {
+    setResendLoading(true);
+    setResendError("");
+    setResendMessage("");
+
+    const response = await fetch(
+      "http://localhost:5000/api/auth/resend-verification",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+        }),
+      }
     );
 
-    setCart([]);
-    setCartOpen(false);
-  };
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message ||
+          "Unable to resend verification email."
+      );
+    }
+
+    setResendMessage(
+      data.message ||
+        "Verification email sent successfully. Please check your inbox."
+    );
+  } catch (error) {
+    console.error(
+      "Resend verification error:",
+      error
+    );
+
+    setResendError(
+      error.message ||
+        "Unable to resend verification email."
+    );
+  } finally {
+    setResendLoading(false);
+  }
+};
+  /* =========================================================
+     FORGOT PASSWORD
+  ========================================================= */
+
+  const handleForgotPassword =
+    async () => {
+      if (!loginEmail) {
+        alert(
+          "Please enter your email first."
+        );
+        return;
+      }
+
+      try {
+        const response =
+          await fetch(
+            "http://localhost:5000/api/auth/forgot-password",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                email: loginEmail,
+              }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Unable to send reset email."
+          );
+        }
+
+        alert(
+          data.message ||
+            "Password reset email sent successfully."
+        );
+      } catch (error) {
+        console.error(
+          "Forgot password error:",
+          error
+        );
+
+        alert(
+          error.message ||
+            "Unable to send reset email."
+        );
+      }
+    };
+
+  /* =========================================================
+     LOGOUT
+  ========================================================= */
 
   const handleLogout = () => {
+    localStorage.removeItem(
+      "pizzaCraftToken"
+    );
+
+    localStorage.removeItem(
+      "pizzaCraftUser"
+    );
+
     setIsLoggedIn(false);
     setUserName("");
-    setLoginEmail("");
-    setCart([]);
+    setUserRole("");
+
+    setAdminOpen(false);
+    setInventoryOpen(false);
+    setMyOrdersOpen(false);
     setCartOpen(false);
+
+    alert(
+      "You have been logged out."
+    );
   };
+
+  /* =========================================================
+     LOGIN REQUIRED
+  ========================================================= */
+
+  const requireLogin = (
+    callback
+  ) => {
+    if (!isLoggedIn) {
+      alert(
+        "Please login first to continue."
+      );
+
+      openLogin();
+      return;
+    }
+
+    callback();
+  };
+
+  /* =========================================================
+     CART
+  ========================================================= */
+
+  const addPizzaToCart = (
+    pizza
+  ) => {
+    requireLogin(() => {
+      setCart(
+        (currentCart) => {
+          const existing =
+            currentCart.find(
+              (item) =>
+                item.id ===
+                pizza.id
+            );
+
+          if (existing) {
+            return currentCart.map(
+              (item) =>
+                item.id ===
+                pizza.id
+                  ? {
+                      ...item,
+                      quantity:
+                        item.quantity +
+                        1,
+                    }
+                  : item
+            );
+          }
+
+          return [
+            ...currentCart,
+            {
+              ...pizza,
+              quantity: 1,
+            },
+          ];
+        }
+      );
+
+      alert(
+        `${pizza.name} added to cart 🍕`
+      );
+    });
+  };
+
+  const addToOrder = () => {
+    requireLogin(() => {
+      const customPizza = {
+        id: `custom-${Date.now()}`,
+        name: "My Custom Pizza",
+        category: "Custom",
+        price: builderPrice,
+        emoji: "🍕",
+        quantity: 1,
+        customization: {
+          size,
+          crust,
+          sauce,
+          cheese,
+          toppings,
+        },
+      };
+
+      setCart(
+        (currentCart) => [
+          ...currentCart,
+          customPizza,
+        ]
+      );
+
+      setBuilderOpen(false);
+
+      setTimeout(() => {
+        setCartOpen(true);
+      }, 100);
+    });
+  };
+
+  const openCart = () => {
+    requireLogin(() => {
+      setCartOpen(true);
+    });
+  };
+
+  const increaseQuantity = (
+    id
+  ) => {
+    setCart(
+      (currentCart) =>
+        currentCart.map(
+          (item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  quantity:
+                    item.quantity +
+                    1,
+                }
+              : item
+        )
+    );
+  };
+
+  const decreaseQuantity = (
+    id
+  ) => {
+    setCart(
+      (currentCart) =>
+        currentCart
+          .map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  quantity:
+                    item.quantity -
+                    1,
+                }
+              : item
+          )
+          .filter(
+            (item) =>
+              item.quantity > 0
+          )
+    );
+  };
+
+  const removeFromCart = (
+    id
+  ) => {
+    setCart(
+      (currentCart) =>
+        currentCart.filter(
+          (item) =>
+            item.id !== id
+        )
+    );
+  };
+
+  const cartTotal =
+    cart.reduce(
+      (total, item) =>
+        total +
+        item.price *
+          item.quantity,
+      0
+    );
+
+  const cartItemsCount =
+    cart.reduce(
+      (total, item) =>
+        total +
+        item.quantity,
+      0
+    );
+
+  /* =========================================================
+     CHECKOUT
+  ========================================================= */
+
+  const handleCheckout =
+    async () => {
+      if (!isLoggedIn) {
+        alert(
+          "Please login first to continue."
+        );
+
+        openLogin();
+        return;
+      }
+
+      if (cart.length === 0) {
+        alert(
+          "Your cart is empty."
+        );
+        return;
+      }
+
+      try {
+        const token =
+          localStorage.getItem(
+            "pizzaCraftToken"
+          );
+
+        if (!token) {
+          alert(
+            "Session expired. Please login again."
+          );
+
+          handleLogout();
+          return;
+        }
+
+        /* ===============================
+           STEP 1: CREATE PAYMENT
+        =============================== */
+
+        const paymentResponse =
+          await fetch(
+            "http://localhost:5000/api/payment/create-order",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                amount:
+                  Number(
+                    cartTotal
+                  ),
+              }),
+            }
+          );
+
+        const paymentData =
+          await paymentResponse.json();
+
+        if (
+          !paymentResponse.ok ||
+          !paymentData.success
+        ) {
+          throw new Error(
+            paymentData.message ||
+              "Unable to create payment order."
+          );
+        }
+
+        /* ===============================
+           STEP 2: DEMO PAYMENT
+        =============================== */
+
+        const confirmPayment =
+          window.confirm(
+            `Demo Payment\n\nAmount: Rs. ${cartTotal}\n\nClick OK to complete the demo payment.`
+          );
+
+        if (!confirmPayment) {
+          alert(
+            "Payment cancelled."
+          );
+          return;
+        }
+
+        /* ===============================
+           STEP 3: PAYMENT SUCCESS
+        =============================== */
+
+        alert(
+          `Payment successful! ✅\n\nPayment ID: ${paymentData.order.id}`
+        );
+
+        /* ===============================
+           STEP 4: ORDER ITEMS
+        =============================== */
+
+        const orderItems =
+          cart.map((item) => ({
+            name: item.name,
+            description:
+              item.description ||
+              "",
+            price: Number(
+              item.price
+            ),
+            quantity: Number(
+              item.quantity
+            ),
+            emoji:
+              item.emoji || "🍕",
+            customization:
+              item.customization ||
+              {},
+          }));
+
+        /* ===============================
+           STEP 5: CREATE ORDER
+        =============================== */
+
+        const orderResponse =
+          await fetch(
+            "http://localhost:5000/api/orders",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                items: orderItems,
+                totalAmount:
+                  Number(
+                    cartTotal
+                  ),
+                paymentId:
+                  paymentData.order.id,
+                paymentMethod:
+                  "Demo Payment",
+              }),
+            }
+          );
+
+        const orderData =
+          await orderResponse.json();
+
+        if (
+          !orderResponse.ok ||
+          !orderData.success
+        ) {
+          throw new Error(
+            orderData.message ||
+              "Payment succeeded but order could not be created."
+          );
+        }
+
+        /* ===============================
+           STEP 6: UPDATE ORDERS
+        =============================== */
+
+        setOrders(
+          (currentOrders) => [
+            orderData.order,
+            ...currentOrders,
+          ]
+        );
+
+        /* ===============================
+           STEP 7: CLEAR CART
+        =============================== */
+
+        setCart([]);
+        setCartOpen(false);
+
+        /* ===============================
+           STEP 8: SUCCESS
+        =============================== */
+
+        alert(
+          `Order placed successfully! 🍕\n\nOrder ID: ${String(
+            orderData.order._id
+          ).slice(-8)}`
+        );
+
+        /* ===============================
+           STEP 9: MY ORDERS
+        =============================== */
+
+        setMyOrdersOpen(true);
+      } catch (error) {
+        console.error(
+          "Checkout/payment error:",
+          error
+        );
+
+        alert(
+          error.message ||
+            "Something went wrong during checkout."
+        );
+      }
+    };
+
+  /* =========================================================
+     TOPPINGS
+  ========================================================= */
+
+  const toggleTopping = (
+    toppingName
+  ) => {
+    setToppings(
+      (current) =>
+        current.includes(
+          toppingName
+        )
+          ? current.filter(
+              (item) =>
+                item !==
+                toppingName
+            )
+          : [
+              ...current,
+              toppingName,
+            ]
+    );
+  };
+
+  /* =========================================================
+     USER ORDERS
+  ========================================================= */
+
+  const userOrders = orders;
+
+  /* =========================================================
+     RENDER
+  ========================================================= */
+
+
+  const isResetPasswordPage =
+  window.location.pathname === "/reset-password";
+
+const resetToken =
+  new URLSearchParams(window.location.search).get("token");
+
+const handleResetPassword = async (e) => {
+  e.preventDefault();
+
+  setResetMessage("");
+  setResetError("");
+
+  if (!resetToken) {
+    setResetError("Invalid or missing reset token.");
+    return;
+  }
+
+  if (!resetPassword || !confirmResetPassword) {
+    setResetError("Please fill both password fields.");
+    return;
+  }
+
+  if (resetPassword.length < 6) {
+    setResetError(
+      "Password must be at least 6 characters long."
+    );
+    return;
+  }
+
+  if (resetPassword !== confirmResetPassword) {
+    setResetError("Passwords do not match.");
+    return;
+  }
+
+  try {
+    setResetLoading(true);
+
+    const response = await fetch(
+      `http://localhost:5000/api/auth/reset-password/${resetToken}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password: resetPassword,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Unable to reset password."
+      );
+    }
+
+    setResetMessage(
+      "Password reset successfully! You can now login."
+    );
+
+    setResetPassword("");
+    setConfirmResetPassword("");
+
+  } catch (error) {
+    console.error("Reset password error:", error);
+
+    setResetError(
+      error.message || "Unable to reset password."
+    );
+  } finally {
+    setResetLoading(false);
+  }
+};
+
+if (isResetPasswordPage) {
+  return (
+    <div className="reset-password-page">
+      <div className="reset-password-card">
+
+        <div className="reset-password-logo">
+          🍕
+        </div>
+
+        <h1>Reset Password</h1>
+
+        <p>
+          Create a new password for your PizzaCraft account.
+        </p>
+
+        <form onSubmit={handleResetPassword}>
+
+          <input
+            type="password"
+            placeholder="New password"
+            value={resetPassword}
+            onChange={(e) =>
+              setResetPassword(e.target.value)
+            }
+          />
+
+          <input
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmResetPassword}
+            onChange={(e) =>
+              setConfirmResetPassword(e.target.value)
+            }
+          />
+
+          {resetError && (
+            <div className="reset-error">
+              {resetError}
+            </div>
+          )}
+
+          {resetMessage && (
+            <div className="reset-success">
+              {resetMessage}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={resetLoading}
+          >
+            {resetLoading
+              ? "Resetting..."
+              : "Reset Password"}
+          </button>
+
+        </form>
+
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="app">
-      {/* NAVBAR */}
 
-      <header className="navbar">
-        <div className="logo">
-          <span className="logo-mark">P</span>
-          <span>
-            Pizza<span>Craft</span>
-          </span>
-        </div>
+      {/* =====================================================
+          NAVBAR
+      ===================================================== */}
 
-        <nav className="nav-links">
-          <a href="#home">Home</a>
-          <a href="#menu">Menu</a>
-          <a href="#builder">Custom Pizza</a>
-          <a href="#about">About</a>
-        </nav>
+      <nav className="navbar">
 
-        <div className="nav-actions">
+        <button
+          className="logo"
+          onClick={() =>
+            scrollToSection(
+              "home"
+            )
+          }
+        >
+          <span>P</span>
+          Pizza
+          <span>Craft</span>
+        </button>
+
+        <div className="nav-links">
+
           <button
-            className="nav-btn login-btn"
             onClick={() =>
-              isLoggedIn
-                ? handleLogout()
-                : setLoginOpen(true)
+              scrollToSection(
+                "home"
+              )
             }
           >
-            {isLoggedIn
-              ? `Logout (${userName})`
-              : "Login"}
+            Home
           </button>
 
           <button
-            className="nav-btn cart-btn"
-            onClick={openCart}
+            onClick={scrollToMenu}
           >
-            🛒
-            <span className="cart-count">
-              {cartCount}
-            </span>
+            Menu
           </button>
+
+          <button
+            onClick={openBuilder}
+          >
+            Custom Pizza
+          </button>
+
+          <button
+            onClick={() =>
+              scrollToSection(
+                "about"
+              )
+            }
+          >
+            About
+          </button>
+
         </div>
-      </header>
 
-      <main>
-        {/* HERO */}
+        <div className="navbar-actions">
 
-        <section className="hero-section" id="home">
-          <div className="hero-content">
-            <p className="hero-badge">
-              FRESH • HOT • MADE FOR YOU
-            </p>
-
-            <h1>
-              Your perfect pizza,
-              <span> crafted your way.</span>
-            </h1>
-
-            <p>
-              Choose from our signature pizzas or build
-              your own masterpiece with fresh ingredients
-              and bold flavours.
-            </p>
-
-            <div className="hero-buttons">
+          {!isLoggedIn ? (
+            <>
               <button
-                className="primary-btn"
-                onClick={scrollToMenu}
+                className="secondary-btn nav-login-btn"
+                onClick={openLogin}
               >
-                Explore Menu →
+                Login
               </button>
 
               <button
-                className="secondary-btn"
-                onClick={openBuilder}
+                className="primary-btn nav-register-btn"
+                onClick={openRegister}
               >
-                Build Your Pizza
+                Register
               </button>
+            </>
+          ) : (
+            <>
+
+              <button
+                className="nav-user-btn"
+                onClick={() =>
+                  setMyOrdersOpen(
+                    true
+                  )
+                }
+              >
+                👤{" "}
+                {userName ||
+                  "Account"}
+              </button>
+
+              <button
+                className="nav-orders-btn"
+                onClick={() => {
+                  loadMyOrders();
+                  setMyOrdersOpen(
+                    true
+                  );
+                }}
+              >
+                📦 My Orders
+              </button>
+
+              {userRole ===
+                "admin" && (
+                <>
+
+                  <button
+                    className="nav-admin-btn"
+                    onClick={() =>
+                      setAdminOpen(
+                        true
+                      )
+                    }
+                  >
+                    👑 Admin Orders
+                  </button>
+
+                  <button
+                    className="nav-inventory-btn"
+                    onClick={() => {
+                      loadInventory();
+                      setInventoryOpen(
+                        true
+                      );
+                    }}
+                  >
+                    📦 Inventory
+                  </button>
+
+                </>
+              )}
+
+              <button
+                className="nav-cart-btn"
+                onClick={openCart}
+              >
+                🛒
+
+                <span className="cart-count">
+                  {cartItemsCount}
+                </span>
+              </button>
+
+              <button
+                className="nav-logout-btn"
+                onClick={
+                  handleLogout
+                }
+              >
+                Logout
+              </button>
+
+            </>
+          )}
+
+        </div>
+      </nav>
+
+      {/* =====================================================
+          EMAIL VERIFICATION MESSAGE
+      ===================================================== */}
+
+     {/* =====================================================
+    EMAIL VERIFICATION PAGE
+===================================================== */}
+
+{window.location.pathname === "/verify-email" && (
+  <section className="about-section email-verification-page">
+    <div className="about-content">
+
+      <div className="hero-badge">
+        PIZZACRAFT • EMAIL VERIFICATION
+      </div>
+
+      {emailVerificationStatus === "loading" && (
+        <>
+          <div className="empty-icon">
+            📧
+          </div>
+
+          <h2>
+            Verifying your email...
+          </h2>
+
+          <p>
+            Please wait while we securely verify
+            your PizzaCraft account.
+          </p>
+        </>
+      )}
+
+      {emailVerificationStatus === "success" && (
+        <>
+          <div className="empty-icon">
+            🎉
+          </div>
+
+          <h2>
+            Email Verified Successfully!
+          </h2>
+
+          <p>
+            {emailVerificationMessage}
+          </p>
+
+          <button
+            className="primary-btn"
+            onClick={() => {
+              window.history.pushState(
+                {},
+                "",
+                "/"
+              );
+
+              openLogin();
+            }}
+          >
+            Login to PizzaCraft →
+          </button>
+        </>
+      )}
+
+      {emailVerificationStatus === "error" && (
+  <>
+    <div className="empty-icon">
+      ⚠️
+    </div>
+
+    <h2>
+      Verification Failed
+    </h2>
+
+    <p>
+      {emailVerificationMessage}
+    </p>
+
+    <div className="resend-verification-box">
+
+      <h3>
+        Didn't receive a valid email?
+      </h3>
+
+      <p>
+        Enter your registered email address
+        and we'll send you a new verification link.
+      </p>
+
+      <input
+        type="email"
+        placeholder="Enter your email address"
+        value={resendEmail}
+        onChange={(e) => {
+          setResendEmail(e.target.value);
+          setResendError("");
+          setResendMessage("");
+        }}
+      />
+
+      {resendError && (
+        <div className="reset-error">
+          {resendError}
+        </div>
+      )}
+
+      {resendMessage && (
+        <div className="reset-success">
+          {resendMessage}
+        </div>
+      )}
+
+      <button
+        className="primary-btn"
+        type="button"
+        onClick={handleResendVerification}
+        disabled={resendLoading}
+      >
+        {resendLoading
+          ? "Sending..."
+          : "📧 Resend Verification Email"}
+      </button>
+
+    </div>
+
+    <button
+      className="secondary-btn"
+      onClick={() => {
+        window.history.pushState(
+          {},
+          "",
+          "/"
+        );
+
+        window.location.reload();
+      }}
+    >
+      Back to PizzaCraft
+    </button>
+  </>
+)}
+
+    </div>
+  </section>
+)}
+
+      {/* =====================================================
+          HERO
+      ===================================================== */}
+
+      <section
+        className="hero-section"
+        id="home"
+      >
+
+        <div className="hero-content">
+
+          <div className="hero-badge">
+            🍕 FRESH • HOT • MADE FOR YOU
+          </div>
+
+          <h1>
+            Your perfect
+            <br />
+            pizza,{" "}
+            <span>crafted</span>
+            <br />
+            your way.
+          </h1>
+
+          <p>
+            Choose from our signature
+            pizzas or build your own
+            masterpiece with fresh
+            ingredients and bold
+            flavors.
+          </p>
+
+          <div className="hero-buttons">
+
+            <button
+              className="primary-btn"
+              onClick={
+                scrollToMenu
+              }
+            >
+              Explore Menu →
+            </button>
+
+            <button
+              className="secondary-btn"
+              onClick={
+                openBuilder
+              }
+            >
+              Build Your Pizza
+            </button>
+
+          </div>
+
+        </div>
+
+        <div className="hero-pizza">
+
+          <div className="pizza-visual">
+
+            <div className="hero-pizza-art">
+              🍕
             </div>
+
           </div>
 
-          <div className="hero-pizza">
-            <div className="pizza-visual"></div>
+        </div>
+
+      </section>
+
+      {/* =====================================================
+          MENU
+      ===================================================== */}
+
+      <section
+        className="categories-section"
+        id="menu"
+      >
+
+        <div className="section-heading">
+
+          <div className="hero-badge">
+            OUR MENU
           </div>
-        </section>
 
-        {/* CATEGORIES */}
+          <h2>
+            Explore Our Menu
+          </h2>
 
-        <section className="categories-section">
-          <div className="section-heading">
-            <h2>Explore Our Menu</h2>
-            <p>
-              Pick your favourite pizza and make it yours.
-            </p>
-          </div>
+          <p>
+            Pick your favourite pizza
+            and make it yours.
+          </p>
 
-          <div className="category-list">
-            {categories.map((category) => (
+        </div>
+
+        <div className="category-list">
+
+          {categories.map(
+            (category) => (
               <button
                 key={category}
                 className={`category-btn ${
-                  activeCategory === category
+                  activeCategory ===
+                  category
                     ? "active"
                     : ""
                 }`}
                 onClick={() =>
-                  setActiveCategory(category)
+                  setActiveCategory(
+                    category
+                  )
                 }
               >
                 {category}
               </button>
-            ))}
-          </div>
-        </section>
+            )
+          )}
 
-        {/* MENU */}
+        </div>
 
-        <section className="pizza-section" id="menu">
-          <div className="pizza-grid">
-            {filteredPizzas.map((pizza) => (
-              <article
+      </section>
+
+      {/* =====================================================
+          PIZZA GRID
+      ===================================================== */}
+
+      <section className="pizza-section">
+
+        <div className="pizza-grid">
+
+          {filteredPizzas.map(
+            (pizza) => (
+              <div
                 className="pizza-card"
-                key={pizza.name}
+                key={pizza.id}
               >
+
                 <div className="pizza-image">
-                  <span>{pizza.emoji}</span>
+
+                  <img
+                    src={pizza.image}
+                    alt={pizza.name}
+                  />
+
                 </div>
 
                 <div className="pizza-info">
-                  <h3>{pizza.name}</h3>
 
-                  <p>{pizza.description}</p>
+                  <h3>
+                    {pizza.name}
+                  </h3>
+
+                  <p>
+                    {pizza.description}
+                  </p>
 
                   <div className="pizza-bottom">
+
                     <span className="price">
-                      Rs. {pizza.price}
+                      Rs.{" "}
+                      {pizza.price}
                     </span>
 
                     <button
                       className="add-btn"
                       onClick={() =>
-                        addPizzaToCart(pizza)
+                        addPizzaToCart(
+                          pizza
+                        )
                       }
                     >
-                      Add to Cart +
+                      Add to Cart
                     </button>
+
                   </div>
+
                 </div>
-              </article>
-            ))}
-          </div>
-        </section>
 
-        {/* BUILDER */}
+              </div>
+            )
+          )}
 
-        <section
-          className="builder-preview"
-          id="builder"
-          style={{
-            padding: "70px 7%",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "40px",
-            alignItems: "center",
-          }}
-        >
+        </div>
+
+      </section>
+
+      {/* =====================================================
+          CUSTOM PIZZA INTRO
+      ===================================================== */}
+
+      <section className="builder-preview">
+
+        <div className="builder-preview-inner">
+
           <div>
-            <p className="hero-badge">YOUR WAY</p>
 
-            <h2
-              style={{
-                fontSize: "42px",
-                margin: "0 0 18px",
-              }}
-            >
-              Build a pizza{" "}
-              <span style={{ color: "var(--accent)" }}>
-                that's uniquely yours.
+            <div className="hero-badge">
+              PIZZA BUILDER
+            </div>
+
+            <h2>
+              Create your own{" "}
+              <span>
+                perfect pizza.
               </span>
             </h2>
 
-            <p
-              style={{
-                color: "var(--muted)",
-                lineHeight: "1.7",
-              }}
-            >
-              Pick your base, sauce, cheese and favourite
-              toppings. Create something that tastes
-              exactly the way you want.
+            <p>
+              Choose your size, crust,
+              sauce, cheese and favourite
+              toppings. Your pizza, exactly
+              the way you want it.
             </p>
 
-            {!builderOpen && (
-              <button
-                className="primary-btn"
-                onClick={openBuilder}
-              >
-                Start Building →
-              </button>
-            )}
+            <button
+              className="primary-btn"
+              onClick={
+                openBuilder
+              }
+            >
+              Start Building 🍕
+            </button>
+
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(2, 1fr)",
-              gap: "15px",
-            }}
-          >
-            {[
-              ["01", "Choose Base", "3 size options"],
-              ["02", "Pick Sauce", "3 signature sauces"],
-              ["03", "Select Cheese", "Premium choices"],
-              ["04", "Add Toppings", "Mix your favourites"],
-            ].map(([number, title, text]) => (
-              <div
-                key={number}
-                style={{
-                  background: "white",
-                  border: "1px solid var(--border)",
-                  borderRadius: "15px",
-                  padding: "20px",
-                  boxShadow: "var(--shadow)",
-                }}
-              >
-                <span
-                  style={{
-                    color: "var(--accent)",
-                    fontWeight: "800",
-                  }}
-                >
-                  {number}
-                </span>
+          <div className="builder-steps">
 
-                <h3>{title}</h3>
+            <div>
+              <span>01</span>
+              <strong>
+                Choose Size
+              </strong>
+              <small>
+                Small, medium or large.
+              </small>
+            </div>
 
-                <small
-                  style={{
-                    color: "var(--muted)",
-                  }}
-                >
-                  {text}
-                </small>
-              </div>
-            ))}
+            <div>
+              <span>02</span>
+              <strong>
+                Pick Your Crust
+              </strong>
+              <small>
+                Classic, thin or cheese burst.
+              </small>
+            </div>
+
+            <div>
+              <span>03</span>
+              <strong>
+                Add Toppings
+              </strong>
+              <small>
+                Make it uniquely yours.
+              </small>
+            </div>
+
+            <div>
+              <span>04</span>
+              <strong>
+                Enjoy
+              </strong>
+              <small>
+                Freshly prepared for you.
+              </small>
+            </div>
+
           </div>
-        </section>
 
-        {/* PIZZA BUILDER */}
+        </div>
 
-        {builderOpen && (
-          <section
-            className="pizza-builder"
-            style={{
-              padding: "30px 7% 80px",
-            }}
-          >
-            <div className="section-heading">
-              <h2>
-                Create your{" "}
-                <span
-                  style={{
-                    color: "var(--accent)",
-                  }}
+      </section>
+
+      {/* =====================================================
+          BUILDER
+      ===================================================== */}
+
+      {builderOpen && (
+        <section className="pizza-builder">
+
+          <div className="section-heading builder-heading">
+
+            <div className="hero-badge">
+              CUSTOM PIZZA
+            </div>
+
+            <h2>
+              Build Your Dream Pizza
+            </h2>
+
+            <p>
+              Select every detail and
+              create something delicious.
+            </p>
+
+          </div>
+
+          {/* SIZE */}
+
+          <div className="builder-group">
+
+            <h3>
+              Choose Size
+            </h3>
+
+            <div className="builder-options">
+
+              {Object.keys(
+                sizePrices
+              ).map((item) => (
+                <button
+                  key={item}
+                  className={`builder-option ${
+                    size === item
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setSize(item)
+                  }
                 >
-                  perfect pizza.
-                </span>
-              </h2>
 
-              <p>
-                Choose your ingredients and watch your
-                price update.
-              </p>
+                  <strong>
+                    {item}
+                  </strong>
+
+                  <span>
+                    {sizePrices[
+                      item
+                    ] === 0
+                      ? "Base price"
+                      : `+ Rs. ${
+                          sizePrices[
+                            item
+                          ]
+                        }`}
+                  </span>
+
+                </button>
+              ))}
+
             </div>
 
-            {/* SIZE */}
+          </div>
 
-            <div className="builder-group">
-              <h3>1. Choose your size</h3>
+          {/* CRUST */}
 
-              <div className="builder-options">
-                {Object.keys(sizePrices).map(
-                  (item) => (
-                    <button
-                      key={item}
-                      className={`builder-option ${
-                        size === item
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() =>
-                        setSize(item)
-                      }
-                    >
-                      <strong>{item}</strong>
+          <div className="builder-group">
 
-                      <span>
-                        {sizePrices[item] === 0
-                          ? "Included"
-                          : `+ Rs. ${sizePrices[item]}`}
-                      </span>
-                    </button>
-                  )
-                )}
-              </div>
+            <h3>
+              Choose Crust
+            </h3>
+
+            <div className="builder-options">
+
+              {Object.keys(
+                crustPrices
+              ).map((item) => (
+                <button
+                  key={item}
+                  className={`builder-option ${
+                    crust === item
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setCrust(item)
+                  }
+                >
+
+                  <strong>
+                    {item}
+                  </strong>
+
+                  <span>
+                    {crustPrices[
+                      item
+                    ] === 0
+                      ? "Included"
+                      : `+ Rs. ${
+                          crustPrices[
+                            item
+                          ]
+                        }`}
+                  </span>
+
+                </button>
+              ))}
+
             </div>
 
-            {/* CRUST */}
+          </div>
 
-            <div className="builder-group">
-              <h3>2. Choose your crust</h3>
+          {/* SAUCE */}
 
-              <div className="builder-options">
-                {Object.keys(crustPrices).map(
-                  (item) => (
-                    <button
-                      key={item}
-                      className={`builder-option ${
-                        crust === item
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() =>
-                        setCrust(item)
-                      }
-                    >
-                      <strong>{item}</strong>
+          <div className="builder-group">
 
-                      <span>
-                        {crustPrices[item] === 0
-                          ? "Included"
-                          : `+ Rs. ${crustPrices[item]}`}
-                      </span>
-                    </button>
-                  )
-                )}
-              </div>
+            <h3>
+              Choose Sauce
+            </h3>
+
+            <div className="builder-options">
+
+              {Object.keys(
+                saucePrices
+              ).map((item) => (
+                <button
+                  key={item}
+                  className={`builder-option ${
+                    sauce === item
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setSauce(item)
+                  }
+                >
+
+                  <strong>
+                    {item}
+                  </strong>
+
+                  <span>
+                    {saucePrices[
+                      item
+                    ] === 0
+                      ? "Included"
+                      : `+ Rs. ${
+                          saucePrices[
+                            item
+                          ]
+                        }`}
+                  </span>
+
+                </button>
+              ))}
+
             </div>
 
-            {/* SAUCE */}
+          </div>
 
-            <div className="builder-group">
-              <h3>3. Choose your sauce</h3>
+          {/* CHEESE */}
 
-              <div className="builder-options">
-                {Object.keys(saucePrices).map(
-                  (item) => (
-                    <button
-                      key={item}
-                      className={`builder-option ${
-                        sauce === item
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() =>
-                        setSauce(item)
-                      }
-                    >
-                      <strong>{item}</strong>
+          <div className="builder-group">
 
-                      <span>
-                        {saucePrices[item] === 0
-                          ? "Included"
-                          : `+ Rs. ${saucePrices[item]}`}
-                      </span>
-                    </button>
-                  )
-                )}
-              </div>
+            <h3>
+              Choose Cheese
+            </h3>
+
+            <div className="builder-options">
+
+              {Object.keys(
+                cheesePrices
+              ).map((item) => (
+                <button
+                  key={item}
+                  className={`builder-option ${
+                    cheese === item
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setCheese(item)
+                  }
+                >
+
+                  <strong>
+                    {item}
+                  </strong>
+
+                  <span>
+                    {cheesePrices[
+                      item
+                    ] === 0
+                      ? "Included"
+                      : `+ Rs. ${
+                          cheesePrices[
+                            item
+                          ]
+                        }`}
+                  </span>
+
+                </button>
+              ))}
+
             </div>
 
-            {/* CHEESE */}
+          </div>
 
-            <div className="builder-group">
-              <h3>4. Choose your cheese</h3>
+          {/* TOPPINGS */}
 
-              <div className="builder-options">
-                {Object.keys(cheesePrices).map(
-                  (item) => (
-                    <button
-                      key={item}
-                      className={`builder-option ${
-                        cheese === item
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() =>
-                        setCheese(item)
-                      }
-                    >
-                      <strong>{item}</strong>
+          <div className="builder-group">
 
-                      <span>
-                        {cheesePrices[item] === 0
-                          ? "Included"
-                          : `+ Rs. ${cheesePrices[item]}`}
-                      </span>
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
+            <h3>
+              Add Toppings
+            </h3>
 
-            {/* TOPPINGS */}
+            <div className="builder-options">
 
-            <div className="builder-group">
-              <h3>5. Add your toppings</h3>
-
-              <div className="builder-options">
-                {toppingOptions.map(
-                  (topping) => {
-                    const selected =
+              {toppingOptions.map(
+                (topping) => (
+                  <button
+                    key={
+                      topping.name
+                    }
+                    className={`builder-option ${
                       toppings.includes(
                         topping.name
-                      );
+                      )
+                        ? "selected"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      toggleTopping(
+                        topping.name
+                      )
+                    }
+                  >
 
-                    return (
-                      <button
-                        key={topping.name}
-                        className={`builder-option ${
-                          selected
-                            ? "selected"
-                            : ""
-                        }`}
-                        onClick={() =>
-                          toggleTopping(
-                            topping.name
-                          )
-                        }
-                      >
-                        <span>
-                          {topping.emoji}
-                        </span>
+                    <span>
+                      {
+                        topping.emoji
+                      }
+                    </span>
 
-                        <strong>
-                          {topping.name}
-                        </strong>
+                    <strong>
+                      {
+                        topping.name
+                      }
+                    </strong>
 
-                        <span>
-                          + Rs. {topping.price}
-                        </span>
-                      </button>
-                    );
-                  }
-                )}
-              </div>
+                    <span>
+                      + Rs.{" "}
+                      {
+                        topping.price
+                      }
+                    </span>
+
+                  </button>
+                )
+              )}
+
             </div>
 
-            {/* SUMMARY */}
-
-            <div
-              className="builder-summary"
-              style={{
-                marginTop: "30px",
-                padding: "25px",
-                background: "white",
-                border: "1px solid var(--border)",
-                borderRadius: "18px",
-                display: "flex",
-                justifyContent:
-                  "space-between",
-                alignItems: "center",
-                gap: "20px",
-                flexWrap: "wrap",
-                boxShadow: "var(--shadow)",
-              }}
-            >
-              <div>
-                <p className="hero-badge">
-                  YOUR CREATION
-                </p>
-
-                <h3>
-                  🍕 {size} {crust} Pizza
-                </h3>
-
-                <p
-                  style={{
-                    color: "var(--muted)",
-                  }}
-                >
-                  {sauce} sauce • {cheese} •{" "}
-                  {toppings.length
-                    ? toppings.join(", ")
-                    : "No extra toppings"}
-                </p>
-              </div>
-
-              <div>
-                <span
-                  style={{
-                    display: "block",
-                    color: "var(--muted)",
-                  }}
-                >
-                  Total
-                </span>
-
-                <strong
-                  style={{
-                    display: "block",
-                    color: "var(--accent)",
-                    fontSize: "28px",
-                    marginBottom: "12px",
-                  }}
-                >
-                  Rs. {totalPrice}
-                </strong>
-
-                <button
-                  className="primary-btn"
-                  onClick={addToOrder}
-                >
-                  Add to Order 🛒
-                </button>
-              </div>
-            </div>
-          </section>
-        )}
-      </main>
-
-      {/* LOGIN MODAL */}
-
-      {loginOpen && (
-        <div
-          className="login-overlay"
-          onClick={() =>
-            setLoginOpen(false)
-          }
-        >
-          <div
-            className="login-modal"
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            <div className="modal-header">
-              <h2>Login to Order 🍕</h2>
-
-              <button
-                className="close-btn"
-                onClick={() =>
-                  setLoginOpen(false)
-                }
-              >
-                ×
-              </button>
-            </div>
-
-            <p
-              style={{
-                color: "var(--muted)",
-              }}
-            >
-              Enter your details to continue
-              ordering.
-            </p>
-
-            <form onSubmit={handleLogin}>
-              <input
-                type="text"
-                placeholder="Your name"
-                value={userName}
-                onChange={(e) =>
-                  setUserName(e.target.value)
-                }
-                required
-              />
-
-              <input
-                type="email"
-                placeholder="Email address"
-                value={loginEmail}
-                onChange={(e) =>
-                  setLoginEmail(e.target.value)
-                }
-                required
-              />
-
-              <button
-                type="submit"
-                className="primary-btn"
-                style={{
-                  width: "100%",
-                }}
-              >
-                Continue to Order →
-              </button>
-            </form>
           </div>
-        </div>
+
+          {/* SUMMARY */}
+
+          <div className="builder-group builder-summary">
+
+            <div>
+
+              <div className="hero-badge">
+                YOUR CREATION
+              </div>
+
+              <h3>
+                {size}{" "}
+                {crust} Pizza
+              </h3>
+
+              <p>
+                {sauce} •{" "}
+                {cheese}
+
+                {toppings.length >
+                  0 &&
+                  ` • ${toppings.join(
+                    ", "
+                  )}`}
+              </p>
+
+            </div>
+
+            <div className="builder-total">
+
+              <span>
+                Total
+              </span>
+
+              <strong>
+                Rs.{" "}
+                {builderPrice}
+              </strong>
+
+              <button
+                className="primary-btn"
+                onClick={
+                  addToOrder
+                }
+              >
+                Add to Cart
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
       )}
 
-      {/* CART */}
+      {/* =====================================================
+          ABOUT
+      ===================================================== */}
+
+      <section
+        id="about"
+        className="about-section"
+      >
+
+        <div className="about-content">
+
+          <div className="hero-badge">
+            ABOUT PIZZACRAFT
+          </div>
+
+          <h2>
+            Pizza made your way.
+          </h2>
+
+          <p>
+            PizzaCraft brings fresh
+            ingredients, bold flavours
+            and complete customization
+            together in one simple pizza
+            experience. Choose a signature
+            pizza or create your own
+            masterpiece from scratch.
+          </p>
+
+        </div>
+
+      </section>
+
+      {/* =====================================================
+          CART
+      ===================================================== */}
 
       {cartOpen && (
         <div
@@ -902,14 +2653,19 @@ function App() {
             setCartOpen(false)
           }
         >
-          <aside
+
+          <div
             className="cart-panel"
-            onClick={(e) =>
-              e.stopPropagation()
+            onClick={(event) =>
+              event.stopPropagation()
             }
           >
+
             <div className="modal-header">
-              <h2>Your Cart 🛒</h2>
+
+              <h2>
+                Your Cart 🛒
+              </h2>
 
               <button
                 className="close-btn"
@@ -919,68 +2675,92 @@ function App() {
               >
                 ×
               </button>
+
             </div>
 
-            {cart.length === 0 ? (
+            {cart.length ===
+            0 ? (
               <div className="cart-empty">
-                <div
-                  style={{
-                    fontSize: "60px",
-                  }}
-                >
+
+                <div className="empty-icon">
                   🍕
                 </div>
 
-                <h3>Your cart is empty</h3>
+                <h3>
+                  Your cart is empty
+                </h3>
 
                 <p>
-                  Add something delicious from
-                  our menu.
+                  Add some delicious
+                  pizzas to get started.
                 </p>
 
                 <button
                   className="primary-btn"
                   onClick={() => {
-                    setCartOpen(false);
+                    setCartOpen(
+                      false
+                    );
                     scrollToMenu();
                   }}
                 >
-                  Explore Menu →
+                  Explore Menu
                 </button>
+
               </div>
             ) : (
               <>
-                {cart.map((item, index) => (
-                  <div
-                    className="cart-item"
-                    key={`${item.name}-${index}`}
-                  >
-                    <div className="cart-item-image">
-                      {item.emoji}
-                    </div>
 
-                    <div className="cart-item-info">
-                      <h4>{item.name}</h4>
+                {cart.map(
+                  (
+                    item,
+                    index
+                  ) => (
+                    <div
+                      className="cart-item"
+                      key={`${item.id}-${index}`}
+                    >
 
-                      <p>
-                        Rs. {item.price}
-                      </p>
+                      <div className="cart-item-image">
+                        {item.emoji}
+                      </div>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems:
-                            "center",
-                          gap: "10px",
-                          marginTop:
-                            "10px",
-                        }}
-                      >
+                      <div className="cart-item-info">
+
+                        <h4>
+                          {item.name}
+                        </h4>
+
+                        <p>
+                          Rs.{" "}
+                          {item.price}
+                        </p>
+
+                        {item.customization && (
+                          <small>
+                            {
+                              item
+                                .customization
+                                .size
+                            }{" "}
+                            •{" "}
+                            {
+                              item
+                                .customization
+                                .crust
+                            }
+                          </small>
+                        )}
+
+                      </div>
+
+                      <div className="quantity-controls">
+
                         <button
-                          className="close-btn"
+                          className="quantity-btn"
                           onClick={() =>
                             decreaseQuantity(
-                              index
+                              item.id
                             )
                           }
                         >
@@ -988,131 +2768,1022 @@ function App() {
                         </button>
 
                         <strong>
-                          {item.quantity}
+                          {
+                            item.quantity
+                          }
                         </strong>
 
                         <button
-                          className="close-btn"
+                          className="quantity-btn"
                           onClick={() =>
                             increaseQuantity(
-                              index
+                              item.id
                             )
                           }
                         >
                           +
                         </button>
 
-                        <button
-                          style={{
-                            marginLeft:
-                              "auto",
-                            border: "none",
-                            background:
-                              "transparent",
-                            color:
-                              "var(--accent)",
-                            fontWeight:
-                              "700",
-                          }}
-                          onClick={() =>
-                            removeFromCart(
-                              index
-                            )
-                          }
-                        >
-                          Remove
-                        </button>
                       </div>
+
+                      <button
+                        className="close-btn"
+                        onClick={() =>
+                          removeFromCart(
+                            item.id
+                          )
+                        }
+                      >
+                        ×
+                      </button>
+
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
 
-                <div
-                  style={{
-                    borderTop:
-                      "1px solid var(--border)",
-                    marginTop: "20px",
-                    paddingTop: "20px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent:
-                        "space-between",
-                      marginBottom: "18px",
-                    }}
-                  >
-                    <strong>Total</strong>
+                <div className="cart-total">
 
-                    <strong
-                      style={{
-                        color:
-                          "var(--accent)",
-                        fontSize:
-                          "22px",
-                      }}
-                    >
-                      Rs. {cartTotal}
+                  <div>
+
+                    <strong>
+                      Total
                     </strong>
+
+                    <strong>
+                      Rs.{" "}
+                      {cartTotal}
+                    </strong>
+
                   </div>
 
                   <button
                     className="primary-btn"
-                    style={{
-                      width: "100%",
-                    }}
-                    onClick={handleCheckout}
+                    onClick={
+                      handleCheckout
+                    }
                   >
                     Place Order →
                   </button>
+
                 </div>
+
               </>
             )}
-          </aside>
+
+          </div>
+
         </div>
       )}
 
-      {/* FOOTER */}
+      {/* =====================================================
+          LOGIN / REGISTER
+      ===================================================== */}
 
-      <footer className="footer" id="about">
+      {loginOpen && (
+        <div
+          className="login-overlay"
+          onClick={closeLogin}
+        >
+
+          <div
+            className="login-modal"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+
+            <div className="modal-header">
+
+              <h2>
+                {registerMode
+                  ? "Create Account"
+                  : "Welcome Back"}
+              </h2>
+
+              <button
+                className="close-btn"
+                type="button"
+                onClick={closeLogin}
+              >
+                ×
+              </button>
+
+            </div>
+
+            {/* =================================================
+                REGISTER
+            ================================================= */}
+
+            {registerMode ? (
+
+              <form
+                onSubmit={
+                  handleRegister
+                }
+              >
+
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={
+                    registerName
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setRegisterName(
+                      event.target
+                        .value
+                    )
+                  }
+                />
+
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  value={
+                    registerEmail
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setRegisterEmail(
+                      event.target
+                        .value
+                    )
+                  }
+                />
+
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={
+                    registerPassword
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setRegisterPassword(
+                      event.target
+                        .value
+                    )
+                  }
+                />
+
+                <button
+                  className="primary-btn"
+                  type="submit"
+                  disabled={
+                    authLoading
+                  }
+                >
+                  {authLoading
+                    ? "Creating Account..."
+                    : "Create Account"}
+                </button>
+
+                <p className="auth-switch">
+
+                  Already have an account?{" "}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRegisterMode(
+                        false
+                      );
+
+                      setLoginEmail(
+                        registerEmail
+                      );
+
+                      setRegisterName(
+                        ""
+                      );
+
+                      setRegisterEmail(
+                        ""
+                      );
+
+                      setRegisterPassword(
+                        ""
+                      );
+                    }}
+                  >
+                    Login
+                  </button>
+
+                </p>
+
+              </form>
+
+            ) : (
+
+              /* =================================================
+                 LOGIN
+              ================================================= */
+
+              <form
+                onSubmit={
+                  handleLogin
+                }
+              >
+
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  value={
+                    loginEmail
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setLoginEmail(
+                      event.target
+                        .value
+                    )
+                  }
+                />
+
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={
+                    loginPassword
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setLoginPassword(
+                      event.target
+                        .value
+                    )
+                  }
+                />
+
+                {/* =================================================
+                    FORGOT PASSWORD
+                ================================================= */}
+
+                <button
+                  type="button"
+                  className="forgot-password-btn"
+                  onClick={
+                    handleForgotPassword
+                  }
+                >
+                  Forgot Password?
+                </button>
+
+                <button
+                  className="primary-btn"
+                  type="submit"
+                  disabled={
+                    authLoading
+                  }
+                >
+                  {authLoading
+                    ? "Logging in..."
+                    : "Login"}
+                </button>
+
+                <p className="auth-switch">
+
+                  Don't have an account?{" "}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRegisterMode(
+                        true
+                      );
+
+                      setLoginPassword(
+                        ""
+                      );
+                    }}
+                  >
+                    Register
+                  </button>
+
+                </p>
+
+              </form>
+            )}
+
+          </div>
+
+        </div>
+      )}
+
+      {/* =====================================================
+          MY ORDERS
+      ===================================================== */}
+
+      {myOrdersOpen && (
+        <div
+          className="login-overlay"
+          onClick={() =>
+            setMyOrdersOpen(false)
+          }
+        >
+
+          <div
+            className="login-modal orders-modal"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+
+            <div className="modal-header">
+
+              <h2>
+                My Orders 📦
+              </h2>
+
+              <button
+                className="close-btn"
+                onClick={() =>
+                  setMyOrdersOpen(
+                    false
+                  )
+                }
+              >
+                ×
+              </button>
+
+            </div>
+
+            {userOrders.length ===
+            0 ? (
+              <div className="cart-empty">
+
+                <div className="empty-icon">
+                  📦
+                </div>
+
+                <h3>
+                  No orders yet
+                </h3>
+
+                <p>
+                  Your placed orders
+                  will appear here.
+                </p>
+
+              </div>
+            ) : (
+              <div>
+
+                {userOrders
+                  .slice()
+                  .reverse()
+                  .map((order) => {
+
+                    const trackingSteps =
+                      [
+                        "Pending",
+                        "Confirmed",
+                        "Preparing",
+                        "Out for Delivery",
+                        "Delivered",
+                      ];
+
+                    const currentStep =
+                      trackingSteps.indexOf(
+                        order.status
+                      );
+
+                    const isCancelled =
+                      order.status ===
+                      "Cancelled";
+
+                    return (
+                      <div
+                        key={
+                          order._id
+                        }
+                        className={`order-card ${
+                          isCancelled
+                            ? "order-cancelled"
+                            : ""
+                        }`}
+                      >
+
+                        <div className="order-top">
+
+                          <div>
+
+                            <strong>
+                              #
+                              {order._id
+                                ?.toString()
+                                .slice(
+                                  -8
+                                )}
+                            </strong>
+
+                            <small>
+                              {order.createdAt
+                                ? new Date(
+                                    order.createdAt
+                                  ).toLocaleDateString()
+                                : ""}
+                            </small>
+
+                          </div>
+
+                          <span
+                            className={`order-status ${
+                              order.status
+                                ?.toLowerCase()
+                                .replace(
+                                  /\s+/g,
+                                  "-"
+                                )
+                            }`}
+                          >
+                            {
+                              order.status
+                            }
+                          </span>
+
+                        </div>
+
+                        <div className="order-summary">
+
+                          <span>
+                            {
+                              order
+                                .items
+                                .length
+                            }{" "}
+                            item(s)
+                          </span>
+
+                          <strong className="order-price">
+                            Rs.{" "}
+                            {
+                              order.totalAmount
+                            }
+                          </strong>
+
+                        </div>
+
+                        {isCancelled ? (
+
+                          <div className="cancelled-order-message">
+
+                            <span className="tracking-icon">
+                              ✕
+                            </span>
+
+                            <div>
+
+                              <strong>
+                                Order Cancelled
+                              </strong>
+
+                              <small>
+                                This order
+                                has been
+                                cancelled.
+                              </small>
+
+                            </div>
+
+                          </div>
+
+                        ) : (
+
+                          <div className="order-tracking">
+
+                            {trackingSteps.map(
+                              (
+                                step,
+                                index
+                              ) => {
+
+                                const completed =
+                                  currentStep >=
+                                  index;
+
+                                const active =
+                                  currentStep ===
+                                  index;
+
+                                return (
+                                  <div
+                                    key={
+                                      step
+                                    }
+                                    className={`tracking-step ${
+                                      completed
+                                        ? "completed"
+                                        : ""
+                                    } ${
+                                      active
+                                        ? "active"
+                                        : ""
+                                    }`}
+                                  >
+
+                                    <div className="tracking-circle">
+                                      {completed
+                                        ? "✓"
+                                        : index +
+                                          1}
+                                    </div>
+
+                                    <span>
+                                      {
+                                        step
+                                      }
+                                    </span>
+
+                                  </div>
+                                );
+                              }
+                            )}
+
+                          </div>
+
+                        )}
+
+                      </div>
+                    );
+                  })}
+
+              </div>
+            )}
+
+          </div>
+
+        </div>
+      )}
+
+      {/* =====================================================
+          ADMIN ORDERS
+      ===================================================== */}
+
+      {adminOpen &&
+        userRole === "admin" && (
+          <div
+            className="login-overlay"
+            onClick={() =>
+              setAdminOpen(false)
+            }
+          >
+
+            <div
+              className="login-modal admin-modal"
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+            >
+
+              <AdminDashboard />
+
+            </div>
+
+          </div>
+        )}
+
+      {/* =====================================================
+          INVENTORY
+      ===================================================== */}
+
+      {inventoryOpen &&
+        userRole === "admin" && (
+          <div
+            className="login-overlay"
+            onClick={() =>
+              setInventoryOpen(false)
+            }
+          >
+
+            <div
+              className="login-modal inventory-modal"
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+            >
+
+              <div className="modal-header">
+
+                <div>
+
+                  <h2>
+                    Inventory 📦
+                  </h2>
+
+                  <p className="inventory-subtitle">
+                    Manage stock and
+                    low-stock thresholds
+                  </p>
+
+                </div>
+
+                <button
+                  className="close-btn"
+                  onClick={() =>
+                    setInventoryOpen(
+                      false
+                    )
+                  }
+                >
+                  ×
+                </button>
+
+              </div>
+
+              <div className="inventory-header-actions">
+
+                <button
+                  className="secondary-btn"
+                  onClick={
+                    loadInventory
+                  }
+                  disabled={
+                    inventoryLoading
+                  }
+                >
+                  {inventoryLoading
+                    ? "Refreshing..."
+                    : "↻ Refresh"}
+                </button>
+
+              </div>
+
+              <div className="inventory-grid">
+
+                {inventoryLoading ? (
+
+                  <div className="inventory-loading">
+
+                    <div className="empty-icon">
+                      📦
+                    </div>
+
+                    <h3>
+                      Loading inventory...
+                    </h3>
+
+                    <p>
+                      Please wait while
+                      we fetch your
+                      inventory.
+                    </p>
+
+                  </div>
+
+                ) : inventory.length ===
+                  0 ? (
+
+                  <div className="inventory-loading">
+
+                    <div className="empty-icon">
+                      📦
+                    </div>
+
+                    <h3>
+                      No inventory items
+                    </h3>
+
+                    <p>
+                      No inventory
+                      records were found.
+                    </p>
+
+                    <button
+                      className="primary-btn"
+                      onClick={
+                        loadInventory
+                      }
+                    >
+                      Refresh Inventory
+                    </button>
+
+                  </div>
+
+                ) : (
+
+                  inventory.map(
+                    (item) => {
+
+                      const stock =
+                        Number(
+                          item.stock ||
+                            0
+                        );
+
+                      const threshold =
+                        Number(
+                          item.lowStockThreshold ??
+                            20
+                        );
+
+                      const isLowStock =
+                        stock <=
+                        threshold;
+
+                      const status =
+                        stock > 0
+                          ? "Available"
+                          : "Out of Stock";
+
+                      return (
+                        <div
+                          key={
+                            item._id
+                          }
+                          className={`inventory-card ${
+                            isLowStock
+                              ? "low-stock-card"
+                              : ""
+                          }`}
+                        >
+
+                          <div className="inventory-card-top">
+
+                            <div>
+
+                              <strong>
+                                {
+                                  item.name
+                                }
+                              </strong>
+
+                              {item.category && (
+                                <small>
+                                  {
+                                    item.category
+                                  }
+                                </small>
+                              )}
+
+                            </div>
+
+                            <span
+                              className={
+                                stock >
+                                0
+                                  ? "inventory-status available"
+                                  : "inventory-status out"
+                              }
+                            >
+                              ●{" "}
+                              {status}
+                            </span>
+
+                          </div>
+
+                          <div className="inventory-stock-info">
+
+                            <span>
+                              Current Stock
+                            </span>
+
+                            <strong>
+                              {stock}
+                            </strong>
+
+                          </div>
+
+                          {isLowStock && (
+                            <div className="inventory-warning">
+
+                              ⚠️ Low Stock
+
+                              <span>
+                                Threshold:{" "}
+                                {
+                                  threshold
+                                }
+                              </span>
+
+                            </div>
+                          )}
+
+                          <div className="inventory-edit-group">
+
+                            <label>
+                              Update Stock
+                            </label>
+
+                            <div className="inventory-edit-row">
+
+                              <input
+                                type="number"
+                                min="0"
+                                defaultValue={
+                                  stock
+                                }
+                                id={`stock-${item._id}`}
+                              />
+
+                              <button
+                                className="primary-btn inventory-update-btn"
+                                onClick={() => {
+
+                                  const input =
+                                    document.getElementById(
+                                      `stock-${item._id}`
+                                    );
+
+                                  updateInventoryStock(
+                                    item._id,
+                                    input.value
+                                  );
+
+                                }}
+                              >
+                                Update
+                              </button>
+
+                            </div>
+
+                          </div>
+
+                          <div className="inventory-threshold-info">
+
+                            <span>
+                              Low-stock threshold
+                            </span>
+
+                            <strong>
+                              {
+                                threshold
+                              }
+                            </strong>
+
+                          </div>
+
+                          <div className="inventory-edit-group">
+
+                            <label>
+                              Update Threshold
+                            </label>
+
+                            <div className="inventory-edit-row">
+
+                              <input
+                                type="number"
+                                min="0"
+                                defaultValue={
+                                  threshold
+                                }
+                                id={`threshold-${item._id}`}
+                              />
+
+                              <button
+                                className="secondary-btn inventory-update-btn"
+                                onClick={() => {
+
+                                  const input =
+                                    document.getElementById(
+                                      `threshold-${item._id}`
+                                    );
+
+                                  updateInventoryThreshold(
+                                    item._id,
+                                    input.value
+                                  );
+
+                                }}
+                              >
+                                Update
+                              </button>
+
+                            </div>
+
+                          </div>
+
+                        </div>
+                      );
+                    }
+                  )
+
+                )}
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
+      <footer className="footer">
+
         <div className="footer-content">
+
           <div>
-            <div className="logo">
-              Pizza<span>Craft</span>
+
+            <div className="logo footer-logo">
+
+              <span>P</span>
+              Pizza
+              <span>Craft</span>
+
             </div>
 
             <p>
-              Fresh pizza. Your way. Every time.
+              Fresh pizzas, bold flavours
+              and your own creativity —
+              all in one delicious
+              experience.
             </p>
+
           </div>
 
           <div>
-            <h4>Quick Links</h4>
+
+            <h4>
+              Quick Links
+            </h4>
 
             <div className="footer-links">
-              <a href="#home">Home</a>
-              <a href="#menu">Menu</a>
-              <a href="#builder">
-                Custom Pizza
+
+              <a
+                href="#home"
+                onClick={(event) => {
+                  event.preventDefault();
+
+                  scrollToSection(
+                    "home"
+                  );
+                }}
+              >
+                Home
               </a>
+
+              <a
+                href="#menu"
+                onClick={(event) => {
+                  event.preventDefault();
+
+                  scrollToMenu();
+                }}
+              >
+                Menu
+              </a>
+
+              <button
+                onClick={
+                  openBuilder
+                }
+              >
+                Custom Pizza
+              </button>
+
+              <a
+                href="#about"
+                onClick={(event) => {
+                  event.preventDefault();
+
+                  scrollToSection(
+                    "about"
+                  );
+                }}
+              >
+                About
+              </a>
+
             </div>
+
           </div>
 
           <div>
-            <h4>PizzaCraft</h4>
+
+            <h4>
+              PizzaCraft
+            </h4>
 
             <p>
-              Handcrafted pizzas made with fresh
-              ingredients and bold flavours.
+              Crafted with passion.
+              Served with happiness.
+              🍕
             </p>
+
           </div>
+
         </div>
 
         <div className="footer-bottom">
-          © 2026 PizzaCraft. All rights reserved.
+
+          ©{" "}
+          {new Date().getFullYear()}{" "}
+          PizzaCraft. All rights
+          reserved.
+
         </div>
+
       </footer>
+
     </div>
   );
 }

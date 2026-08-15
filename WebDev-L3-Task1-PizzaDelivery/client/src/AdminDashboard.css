@@ -1,0 +1,308 @@
+/* =========================================================
+   PIZZACRAFT ADMIN DASHBOARD
+========================================================= */
+
+.admin-dashboard {
+  width: 100%;
+  max-width: 1180px !important;
+  margin: 0 auto !important;
+  padding: 35px 40px !important;
+  box-sizing: border-box;
+  color: #241a17;
+}
+
+/* =========================================================
+   MAIN HEADER
+========================================================= */
+
+.admin-dashboard > div:first-child {
+  margin-bottom: 32px !important;
+  text-align: left;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #eadfd7;
+}
+
+.admin-dashboard > div:first-child h1 {
+  margin: 0 !important;
+  font-size: 34px !important;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: #241a17;
+}
+
+.admin-dashboard > div:first-child p {
+  margin: 8px 0 0 !important;
+  color: #756963 !important;
+  font-size: 15px;
+}
+
+/* =========================================================
+   SECTION HEADINGS
+========================================================= */
+
+.admin-dashboard section {
+  width: 100%;
+}
+
+.admin-dashboard section > h2 {
+  margin: 0 0 18px !important;
+  font-size: 23px !important;
+  font-weight: 800;
+  color: #241a17;
+}
+
+/* =========================================================
+   ORDERS
+========================================================= */
+
+/* Order card */
+
+.admin-dashboard section:first-of-type > div {
+  width: 100% !important;
+  box-sizing: border-box;
+  margin-bottom: 18px !important;
+  padding: 22px 25px !important;
+
+  border: 1px solid #eadfd7 !important;
+  border-radius: 16px !important;
+
+  background: #ffffff !important;
+
+  box-shadow: 0 8px 25px rgba(70, 35, 15, 0.07);
+
+  text-align: left;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-dashboard section:first-of-type > div:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 13px 32px rgba(70, 35, 15, 0.11);
+}
+
+/* Order ID */
+
+.admin-dashboard section:first-of-type > div h3 {
+  margin: 0 0 18px !important;
+  font-size: 18px;
+  font-weight: 800;
+  color: #241a17;
+}
+
+/* Order information */
+
+.admin-dashboard section:first-of-type > div p {
+  margin: 8px 0 !important;
+  color: #5f514b;
+  font-size: 14px;
+}
+
+.admin-dashboard section:first-of-type > div p strong {
+  color: #332621;
+}
+
+/* Items heading */
+
+.admin-dashboard section:first-of-type > div h4 {
+  margin: 22px 0 10px !important;
+  font-size: 15px;
+  color: #241a17;
+}
+
+/* Item rows */
+
+.admin-dashboard section:first-of-type > div h4 + p,
+.admin-dashboard section:first-of-type > div h4 ~ p {
+  color: #4d403a;
+}
+
+/* =========================================================
+   STATUS AREA
+========================================================= */
+
+.admin-dashboard section:first-of-type > div > div {
+  margin-top: 18px !important;
+  padding-top: 17px;
+  border-top: 1px solid #f0e7e1;
+
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-dashboard section:first-of-type label {
+  color: #332621;
+  font-size: 13px;
+}
+
+.admin-dashboard section:first-of-type select {
+  margin-left: 0 !important;
+  min-width: 155px;
+  padding: 10px 34px 10px 12px !important;
+
+  border: 1px solid #eadfd7 !important;
+  border-radius: 10px !important;
+
+  background: #fffaf5;
+  color: #241a17;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  outline: none;
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.admin-dashboard section:first-of-type select:hover {
+  border-color: #e85d04 !important;
+}
+
+.admin-dashboard section:first-of-type select:focus {
+  border-color: #e85d04 !important;
+  box-shadow: 0 0 0 3px rgba(232, 93, 4, 0.12);
+}
+
+.admin-dashboard section:first-of-type select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Updating text */
+
+.admin-dashboard section:first-of-type select + span {
+  color: #e85d04;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   INVENTORY SECTION
+========================================================= */
+
+.admin-dashboard section:nth-of-type(2) {
+  margin-top: 55px !important;
+  padding-top: 30px;
+  border-top: 1px solid #eadfd7;
+}
+
+.admin-dashboard section:nth-of-type(2) > p {
+  color: #756963 !important;
+  font-size: 14px;
+}
+
+/* =========================================================
+   INVENTORY SUMMARY CARDS
+========================================================= */
+
+.admin-dashboard section:nth-of-type(2) > div:first-of-type {
+  margin-bottom: 25px !important;
+}
+
+.admin-dashboard section:nth-of-type(2) > div:first-of-type > div {
+  border-radius: 16px !important;
+  padding: 20px !important;
+  box-shadow: 0 6px 20px rgba(70, 35, 15, 0.05);
+}
+
+/* =========================================================
+   INVENTORY CARDS
+========================================================= */
+
+.admin-dashboard section:nth-of-type(2) > div:last-child > div {
+  border-radius: 16px !important;
+  padding: 21px !important;
+  box-shadow: 0 7px 22px rgba(70, 35, 15, 0.06) !important;
+  transition: 0.2s ease;
+}
+
+.admin-dashboard section:nth-of-type(2) > div:last-child > div:hover {
+  transform: translateY(-2px);
+}
+
+/* Inventory headings */
+
+.admin-dashboard section:nth-of-type(2) h3 {
+  color: #241a17;
+}
+
+/* Inventory inputs */
+
+.admin-dashboard section:nth-of-type(2) input {
+  border: 1px solid #eadfd7 !important;
+  border-radius: 9px !important;
+  background: #fffdfb;
+  outline: none;
+}
+
+.admin-dashboard section:nth-of-type(2) input:focus {
+  border-color: #e85d04 !important;
+  box-shadow: 0 0 0 3px rgba(232, 93, 4, 0.1);
+}
+
+/* Inventory buttons */
+
+.admin-dashboard section:nth-of-type(2) button {
+  border-radius: 9px !important;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.admin-dashboard section:nth-of-type(2) button:first-of-type {
+  background: #e85d04 !important;
+}
+
+.admin-dashboard section:nth-of-type(2) button:first-of-type:hover {
+  background: #c94b00 !important;
+}
+
+.admin-dashboard section:nth-of-type(2) button:last-of-type {
+  background: #fff0e6 !important;
+  color: #c94b00 !important;
+}
+
+.admin-dashboard section:nth-of-type(2) button:last-of-type:hover {
+  background: #ffe1cf !important;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+  .admin-dashboard {
+    padding: 28px 22px !important;
+  }
+
+  .admin-dashboard > div:first-child h1 {
+    font-size: 30px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-dashboard {
+    padding: 22px 15px !important;
+  }
+
+  .admin-dashboard > div:first-child h1 {
+    font-size: 26px !important;
+  }
+
+  .admin-dashboard section:first-of-type > div {
+    padding: 18px !important;
+  }
+
+  .admin-dashboard section:first-of-type > div > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-dashboard section:first-of-type select {
+    width: 100%;
+  }
+}
