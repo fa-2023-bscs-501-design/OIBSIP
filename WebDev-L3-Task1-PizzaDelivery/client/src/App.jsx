@@ -1,3 +1,4 @@
+const API_URL = "https://oibsip-dusky.vercel.app";
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import AdminDashboard from "./AdminDashboard";
@@ -312,7 +313,7 @@ const [resendError, setResendError] = useState("");
       setEmailVerificationStatus("loading");
 
       const response = await fetch(
-        `http://localhost:5000/api/auth/verify-email?token=${encodeURIComponent(
+        `${API_URL}/api/auth/verify-email?token=${encodeURIComponent(
           token
         )}`
       );
@@ -421,7 +422,7 @@ const [resendError, setResendError] = useState("");
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/orders",
+        '${API_URL}/api/orders',
         {
           method: "GET",
           headers: {
@@ -470,7 +471,7 @@ const [resendError, setResendError] = useState("");
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/inventory",
+        '${API_URL}/api/inventory',
         {
           method: "GET",
           headers: {
@@ -543,7 +544,7 @@ const [resendError, setResendError] = useState("");
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/inventory/${id}/stock`,
+        `${API_URL}/api/inventory/${id}/stock`,
         {
           method: "PUT",
           headers: {
@@ -630,7 +631,7 @@ const [resendError, setResendError] = useState("");
         }
 
         const response = await fetch(
-          `http://localhost:5000/api/inventory/${id}/threshold`,
+          `${API_URL}/api/inventory/${id}/threshold`,
           {
             method: "PUT",
             headers: {
@@ -840,7 +841,7 @@ const [resendError, setResendError] = useState("");
       setAuthLoading(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/auth/register",
+        '${API_URL}/api/auth/register',
         {
           method: "POST",
           headers: {
@@ -911,7 +912,7 @@ const [resendError, setResendError] = useState("");
       setAuthLoading(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+        '${API_URL}/api/auth/login',
         {
           method: "POST",
           headers: {
@@ -1021,7 +1022,7 @@ const [resendError, setResendError] = useState("");
     setResendMessage("");
 
     const response = await fetch(
-      "http://localhost:5000/api/auth/resend-verification",
+      '${API_URL}/api/auth/resend-verification',
       {
         method: "POST",
         headers: {
@@ -1076,7 +1077,7 @@ const [resendError, setResendError] = useState("");
       try {
         const response =
           await fetch(
-            "http://localhost:5000/api/auth/forgot-password",
+            '${API_URL}/api/auth/forgot-password',
             {
               method: "POST",
               headers: {
@@ -1363,7 +1364,7 @@ const [resendError, setResendError] = useState("");
 
         const paymentResponse =
           await fetch(
-            "http://localhost:5000/api/payment/create-order",
+            '${API_URL}/api/payment/create-order',
             {
               method: "POST",
               headers: {
@@ -1446,7 +1447,7 @@ const [resendError, setResendError] = useState("");
 
         const orderResponse =
           await fetch(
-            "http://localhost:5000/api/orders",
+            '${API_URL}/api/orders',
             {
               method: "POST",
               headers: {
@@ -1600,7 +1601,7 @@ const handleResetPassword = async (e) => {
     setResetLoading(true);
 
     const response = await fetch(
-      `http://localhost:5000/api/auth/reset-password/${resetToken}`,
+      `${API_URL}/api/auth/reset-password/${resetToken}`,
       {
         method: "POST",
         headers: {
