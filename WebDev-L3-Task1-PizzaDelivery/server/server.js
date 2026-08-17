@@ -3,13 +3,6 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const authRoutes = require("./routes/authRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const inventoryRoutes = require("./routes/inventoryRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
-
-const Inventory = require("./models/Inventory");
-
 const app = express();
 
 // =========================================================
@@ -30,269 +23,177 @@ app.use(express.json());
 // MONGODB CONNECTION
 // =========================================================
 
+const MONGO_URI = process.env.MONGO_URI;
+
 let mongoConnectionPromise = null;
 
 const connectMongoDB = async () => {
+  if (!MONGO_URI) {
+    throw new Error("MONGO_URI is missing from environment variables.");
+  }
+
+  // Already connected
   if (mongoose.connection.readyState === 1) {
-    return mongoose.connection;
+    return;
   }
 
-  if (!process.env.MONGO_URI) {
-    throw new Error("MONGO_URI is missing");
+  // Connection already in progress
+  if (mongoConnectionPromise) {
+    return mongoConnectionPromise;
   }
 
-  if (!mongoConnectionPromise) {
-    mongoConnectionPromise = mongoose.connect(
-      process.env.MONGO_URI,
-      {
-        serverSelectionTimeoutMS: 10000,
-        connectTimeoutMS: 10000,
-      }
-    );
-  }
+  console.log("🔗 Connecting to MongoDB...");
 
-  try {
-    await mongoConnectionPromise;
+  mongoConnectionPromise = mongoose
+    .connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+    })
+    .then(() => {
+      console.log("✅ MongoDB connected successfully");
+    })
+    .catch((error) => {
+      console.error("❌ MongoDB connection failed");
+      console.error("Name:", error.name);
+      console.error("Message:", error.message);
+      console.error("Code:", error.code);
 
-    console.log("✅ MongoDB connected successfully");
+      mongoConnectionPromise = null;
 
-    return mongoose.connection;
-  } catch (error) {
-    mongoConnectionPromise = null;
+      throw error;
+    });
 
-    console.error("❌ MongoDB connection failed:");
-    console.error(error.message);
-
-    throw error;
-  }
+  return mongoConnectionPromise;
 };
 
 // =========================================================
-// ROOT TEST ROUTE
+// BASIC TEST ROUTES
 // =========================================================
 
-app.get("/", (req, res) => {
-  return res.json({
+app.get("/", async (req, res) => {
+  try {
+    await connectMongoDB();
+
+    res.status(200).json({
+      success: true,
+      message: "PizzaCraft API is running 🍕",
+      database: "connected",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "PizzaCraft API is running but MongoDB is not connected.",
+      error: error.message,
+    });
+  }
+});
+
+app.get("/api/test", (req, res) => {
+  res.status(200).json({
     success: true,
-    message: "PizzaCraft API is running 🍕",
+    message: "PizzaCraft serverless function is working",
   });
 });
 
 // =========================================================
-// DATABASE HEALTH CHECK
+// LOAD ROUTES
 // =========================================================
 
-app.get("/api/health", async (req, res) => {
+const authRoutes = require("./routes/authRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const inventoryRoutes = require("./routes/inventoryRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+
+app.use("/api/auth", async (req, res, next) => {
   try {
     await connectMongoDB();
-
-    return res.json({
-      success: true,
-      message: "PizzaCraft API and MongoDB are working.",
-      database: "connected",
-    });
+    next();
   } catch (error) {
-    console.error("Health check error:", error);
+    console.error("AUTH DATABASE ERROR:", error);
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: "MongoDB connection failed.",
+      message: "Database connection failed.",
       error: error.message,
     });
   }
-});
+}, authRoutes);
 
-// =========================================================
-// PAYMENT ROUTES
-// =========================================================
-
-app.use("/api/payment", paymentRoutes);
-
-// =========================================================
-// AUTH ROUTES
-// =========================================================
-
-app.use("/api/auth", authRoutes);
-
-// =========================================================
-// ORDER ROUTES
-// =========================================================
-
-app.use("/api/orders", orderRoutes);
-
-// =========================================================
-// INVENTORY ROUTES
-// =========================================================
-
-app.use("/api/inventory", inventoryRoutes);
-
-// =========================================================
-// INVENTORY SETUP
-// =========================================================
-
-app.get("/api/setup-inventory", async (req, res) => {
+app.use("/api/orders", async (req, res, next) => {
   try {
     await connectMongoDB();
-
-    const items = [
-      {
-        name: "Classic Pizza Base",
-        category: "Pizza Base",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Thin Crust Base",
-        category: "Pizza Base",
-        stock: 80,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Cheese Burst Base",
-        category: "Pizza Base",
-        stock: 60,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Tomato Sauce",
-        category: "Sauce",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "BBQ Sauce",
-        category: "Sauce",
-        stock: 80,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Spicy Garlic Sauce",
-        category: "Sauce",
-        stock: 70,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Mozzarella",
-        category: "Cheese",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Cheddar",
-        category: "Cheese",
-        stock: 80,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Four Cheese",
-        category: "Cheese",
-        stock: 60,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Pepperoni",
-        category: "Vegetable",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Mushrooms",
-        category: "Vegetable",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Olives",
-        category: "Vegetable",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Jalapeños",
-        category: "Vegetable",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Onions",
-        category: "Vegetable",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Bell Peppers",
-        category: "Vegetable",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-      {
-        name: "Chicken",
-        category: "Chicken",
-        stock: 100,
-        lowStockThreshold: 20,
-      },
-    ];
-
-    let added = 0;
-
-    for (const item of items) {
-      const exists = await Inventory.findOne({
-        name: item.name,
-      });
-
-      if (!exists) {
-        await Inventory.create(item);
-        added++;
-      }
-    }
-
-    return res.json({
-      success: true,
-      message: `${added} inventory items added successfully.`,
-    });
+    next();
   } catch (error) {
-    console.error("Inventory setup error:", error);
+    console.error("ORDER DATABASE ERROR:", error);
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: "Failed to setup inventory.",
+      message: "Database connection failed.",
       error: error.message,
     });
   }
-});
+}, orderRoutes);
+
+app.use("/api/inventory", async (req, res, next) => {
+  try {
+    await connectMongoDB();
+    next();
+  } catch (error) {
+    console.error("INVENTORY DATABASE ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed.",
+      error: error.message,
+    });
+  }
+}, inventoryRoutes);
+
+app.use("/api/payment", async (req, res, next) => {
+  try {
+    await connectMongoDB();
+    next();
+  } catch (error) {
+    console.error("PAYMENT DATABASE ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed.",
+      error: error.message,
+    });
+  }
+}, paymentRoutes);
 
 // =========================================================
-// 404 HANDLER
+// 404
 // =========================================================
 
 app.use((req, res) => {
-  return res.status(404).json({
+  res.status(404).json({
     success: false,
     message: `Route not found: ${req.method} ${req.originalUrl}`,
   });
 });
 
 // =========================================================
-// GLOBAL ERROR HANDLER
+// ERROR HANDLER
 // =========================================================
 
-app.use((error, req, res, next) => {
-  console.error("========================================");
-  console.error("GLOBAL SERVER ERROR");
-  console.error("Name:", error.name);
-  console.error("Message:", error.message);
-  console.error("Stack:", error.stack);
-  console.error("========================================");
+app.use((err, req, res, next) => {
+  console.error("EXPRESS ERROR:", err);
 
-  return res.status(500).json({
+  res.status(500).json({
     success: false,
-    message: "Internal server error.",
-    error: error.message,
+    message: "Internal server error",
+    error:
+      process.env.NODE_ENV === "production"
+        ? undefined
+        : err.message,
   });
 });
 
 // =========================================================
-// VERCEL EXPORT
+// VERCEL
 // =========================================================
 
 module.exports = app;
@@ -304,20 +205,18 @@ module.exports = app;
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
-  connectMongoDB()
-    .then(() => {
-      app.listen(PORT, () => {
-        console.log(
-          `🍕 PizzaCraft server running on port ${PORT}`
+  app.listen(PORT, () => {
+    console.log(`🍕 PizzaCraft server running on port ${PORT}`);
+
+    connectMongoDB()
+      .then(() => {
+        console.log("✅ Local MongoDB connection ready");
+      })
+      .catch((error) => {
+        console.error(
+          "❌ Local MongoDB connection failed:",
+          error.message
         );
       });
-    })
-    .catch((error) => {
-      console.error(
-        "❌ Server could not start:",
-        error.message
-      );
-
-      process.exit(1);
-    });
+  });
 }
