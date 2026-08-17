@@ -53,11 +53,11 @@ const sendVerificationEmail = async (user, verificationToken) => {
     )}`;
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-    to: user.email,
-    subject: "Verify your PizzaCraft account",
-    html: `
-      <!DOCTYPE html>
+  from: "meerabasif04@gmail.com",
+  to: user.email,
+  subject: "Verify your PizzaCraft account",
+  html: `
+    <!DOCTYPE html>
       <html>
       <body style="font-family:Arial,sans-serif;background:#f7f3ef;padding:30px;">
         <div style="
@@ -139,11 +139,11 @@ const sendPasswordResetEmail = async (user, resetToken) => {
     )}`;
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-    to: user.email,
-    subject: "Reset your PizzaCraft password",
-    html: `
-      <!DOCTYPE html>
+  from: "meerabasif04@gmail.com",
+  to: user.email,
+  subject: "Reset your PizzaCraft password",
+  html: `
+    <!DOCTYPE html>
       <html>
       <body style="
         font-family:Arial,sans-serif;
