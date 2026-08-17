@@ -1,4 +1,4 @@
-const API_URL = "https://oibsip-dusky.vercel.app";
+const API_URL = "https://pizzacraft-delta.vercel.app";
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import AdminDashboard from "./AdminDashboard";
@@ -422,7 +422,7 @@ const [resendError, setResendError] = useState("");
       }
 
       const response = await fetch(
-        '${API_URL}/api/orders',
+        `${API_URL}/api/orders`,
         {
           method: "GET",
           headers: {
@@ -471,7 +471,7 @@ const [resendError, setResendError] = useState("");
       }
 
       const response = await fetch(
-        '${API_URL}/api/inventory',
+        `${API_URL}/api/inventory`,
         {
           method: "GET",
           headers: {
@@ -841,7 +841,7 @@ const [resendError, setResendError] = useState("");
       setAuthLoading(true);
 
       const response = await fetch(
-        '${API_URL}/api/auth/register',
+        `${API_URL}/api/auth/register`,
         {
           method: "POST",
           headers: {
@@ -912,7 +912,7 @@ const [resendError, setResendError] = useState("");
       setAuthLoading(true);
 
       const response = await fetch(
-        '${API_URL}/api/auth/login',
+        `${API_URL}/api/auth/login`,
         {
           method: "POST",
           headers: {
@@ -1022,7 +1022,7 @@ const [resendError, setResendError] = useState("");
     setResendMessage("");
 
     const response = await fetch(
-      '${API_URL}/api/auth/resend-verification',
+      `${API_URL}/api/auth/resend-verification`,
       {
         method: "POST",
         headers: {
@@ -1077,7 +1077,7 @@ const [resendError, setResendError] = useState("");
       try {
         const response =
           await fetch(
-            '${API_URL}/api/auth/forgot-password',
+            `${API_URL}/api/auth/forgot-password`,
             {
               method: "POST",
               headers: {
@@ -1364,7 +1364,7 @@ const [resendError, setResendError] = useState("");
 
         const paymentResponse =
           await fetch(
-            '${API_URL}/api/payment/create-order',
+            `${API_URL}/api/payment/create-order`,
             {
               method: "POST",
               headers: {
@@ -1447,7 +1447,7 @@ const [resendError, setResendError] = useState("");
 
         const orderResponse =
           await fetch(
-            '${API_URL}/api/orders',
+            `${API_URL}/api/orders`,
             {
               method: "POST",
               headers: {
