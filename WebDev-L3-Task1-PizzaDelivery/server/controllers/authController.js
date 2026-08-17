@@ -48,10 +48,9 @@ const sendVerificationEmail = async (user, verificationToken) => {
     process.env.CLIENT_URL || "http://localhost:5173";
 
   const verificationLink =
-    `${frontendUrl}/verify-email?token=${encodeURIComponent(
-      verificationToken
-    )}`;
-
+  `https://pizzacraft-delta.vercel.app/verify-email?token=${encodeURIComponent(
+    verificationToken
+  )}`;
   await transporter.sendMail({
   from: "meerabasif04@gmail.com",
   to: user.email,
@@ -134,9 +133,9 @@ const sendPasswordResetEmail = async (user, resetToken) => {
     process.env.CLIENT_URL || "http://localhost:5173";
 
   const resetLink =
-    `${frontendUrl}/reset-password?token=${encodeURIComponent(
-      resetToken
-    )}`;
+  `https://pizzacraft-delta.vercel.app/reset-password?token=${encodeURIComponent(
+    resetToken
+  )}`;
 
   await transporter.sendMail({
   from: "meerabasif04@gmail.com",
