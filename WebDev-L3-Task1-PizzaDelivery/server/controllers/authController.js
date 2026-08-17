@@ -343,60 +343,118 @@ const sendPasswordResetEmail = async (user, resetToken) => {
 
 const register = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      password,
-    } = req.body;
+    console.log("========================================");
+    console.log("REGISTER REQUEST RECEIVED");
+    console.log("BODY:", req.body);
+    console.log("========================================");
+
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please fill all fields.",
+        message: "Please fill all fields.",
       });
     }
 
-    const normalizedEmail =
-      email.trim().toLowerCase();
-
-    const trimmedName =
-      name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedName = name.trim();
 
     if (trimmedName.length < 2) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please enter a valid name.",
+        message: "Please enter a valid name.",
       });
     }
 
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
-        message:
-          "Password must be at least 6 characters long.",
+        message: "Password must be at least 6 characters long.",
       });
     }
 
-    const existingUser =
-      await User.findOne({
-        email: normalizedEmail,
-      });
+    console.log("Checking existing user...");
+
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+    });
 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message:
-          "An account with this email already exists.",
+        message: "An account with this email already exists.",
       });
     }
 
-    const hashedPassword =
-      await bcrypt.hash(
-        password,
-        10
+    console.log("Hashing password...");
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const verificationToken =
+      crypto.randomBytes(32).toString("hex");
+
+    const verificationExpires = new Date(
+      Date.now() + 24 * 60 * 60 * 1000
+    );
+
+    console.log("Creating user...");
+
+    const user = await User.create({
+      name: trimmedName,
+      email: normalizedEmail,
+      password: hashedPassword,
+      role: "user",
+      isVerified: false,
+      emailVerificationToken: verificationToken,
+      emailVerificationExpires: verificationExpires,
+    });
+
+    console.log("USER CREATED:", user._id);
+
+    try {
+      console.log("Sending verification email...");
+
+      await sendVerificationEmail(
+        user,
+        verificationToken
       );
+
+      console.log("Verification email sent.");
+    } catch (emailError) {
+      console.error("EMAIL ERROR:", emailError);
+
+      await User.findByIdAndDelete(user._id);
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to send verification email. Please check your email configuration.",
+        error: emailError.message,
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message:
+        "Registration successful. Please check your email to verify your account.",
+    });
+
+  } catch (error) {
+    console.error("========================================");
+    console.error("REGISTER ERROR");
+    console.error("NAME:", error.name);
+    console.error("MESSAGE:", error.message);
+    console.error("STACK:", error.stack);
+    console.error("========================================");
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error during registration.",
+      error: error.message,
+    });
+  }
+};
 
     const verificationToken =
       crypto.randomBytes(32).toString("hex");
