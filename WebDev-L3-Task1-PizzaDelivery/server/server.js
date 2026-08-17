@@ -30,24 +30,77 @@ app.use(express.json());
 // MONGODB CONNECTION
 // =========================================================
 
-const MONGO_URI = process.env.MONGO_URI;
+let mongoConnectionPromise = null;
 
-if (!MONGO_URI) {
-  console.error("❌ MONGO_URI is missing");
-} else {
-  mongoose
-    .connect(MONGO_URI, {
-      serverSelectionTimeoutMS: 10000,
-      connectTimeoutMS: 10000,
-    })
-    .then(() => {
-      console.log("✅ MongoDB connected successfully");
-    })
-    .catch((error) => {
-      console.error("❌ MongoDB connection failed");
-      console.error("Error:", error.message);
+const connectMongoDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI is missing");
+  }
+
+  if (!mongoConnectionPromise) {
+    mongoConnectionPromise = mongoose.connect(
+      process.env.MONGO_URI,
+      {
+        serverSelectionTimeoutMS: 10000,
+        connectTimeoutMS: 10000,
+      }
+    );
+  }
+
+  try {
+    await mongoConnectionPromise;
+
+    console.log("✅ MongoDB connected successfully");
+
+    return mongoose.connection;
+  } catch (error) {
+    mongoConnectionPromise = null;
+
+    console.error("❌ MongoDB connection failed:");
+    console.error(error.message);
+
+    throw error;
+  }
+};
+
+// =========================================================
+// ROOT TEST ROUTE
+// =========================================================
+
+app.get("/", (req, res) => {
+  return res.json({
+    success: true,
+    message: "PizzaCraft API is running 🍕",
+  });
+});
+
+// =========================================================
+// DATABASE HEALTH CHECK
+// =========================================================
+
+app.get("/api/health", async (req, res) => {
+  try {
+    await connectMongoDB();
+
+    return res.json({
+      success: true,
+      message: "PizzaCraft API and MongoDB are working.",
+      database: "connected",
     });
-}
+  } catch (error) {
+    console.error("Health check error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "MongoDB connection failed.",
+      error: error.message,
+    });
+  }
+});
 
 // =========================================================
 // PAYMENT ROUTES
@@ -56,22 +109,21 @@ if (!MONGO_URI) {
 app.use("/api/payment", paymentRoutes);
 
 // =========================================================
-// TEST ROUTE
-// =========================================================
-
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "PizzaCraft API is running 🍕",
-  });
-});
-
-// =========================================================
-// API ROUTES
+// AUTH ROUTES
 // =========================================================
 
 app.use("/api/auth", authRoutes);
+
+// =========================================================
+// ORDER ROUTES
+// =========================================================
+
 app.use("/api/orders", orderRoutes);
+
+// =========================================================
+// INVENTORY ROUTES
+// =========================================================
+
 app.use("/api/inventory", inventoryRoutes);
 
 // =========================================================
@@ -80,6 +132,8 @@ app.use("/api/inventory", inventoryRoutes);
 
 app.get("/api/setup-inventory", async (req, res) => {
   try {
+    await connectMongoDB();
+
     const items = [
       {
         name: "Classic Pizza Base",
@@ -202,8 +256,39 @@ app.get("/api/setup-inventory", async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to setup inventory.",
+      error: error.message,
     });
   }
+});
+
+// =========================================================
+// 404 HANDLER
+// =========================================================
+
+app.use((req, res) => {
+  return res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// =========================================================
+// GLOBAL ERROR HANDLER
+// =========================================================
+
+app.use((error, req, res, next) => {
+  console.error("========================================");
+  console.error("GLOBAL SERVER ERROR");
+  console.error("Name:", error.name);
+  console.error("Message:", error.message);
+  console.error("Stack:", error.stack);
+  console.error("========================================");
+
+  return res.status(500).json({
+    success: false,
+    message: "Internal server error.",
+    error: error.message,
+  });
 });
 
 // =========================================================
@@ -219,7 +304,20 @@ module.exports = app;
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
-  app.listen(PORT, () => {
-    console.log(`🍕 PizzaCraft server running on port ${PORT}`);
-  });
+  connectMongoDB()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(
+          `🍕 PizzaCraft server running on port ${PORT}`
+        );
+      });
+    })
+    .catch((error) => {
+      console.error(
+        "❌ Server could not start:",
+        error.message
+      );
+
+      process.exit(1);
+    });
 }
