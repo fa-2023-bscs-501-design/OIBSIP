@@ -36,39 +36,64 @@ const createTransporter = () => {
 };
 
 // =========================================================
+// FRONTEND URL
+// =========================================================
+
+const getFrontendUrl = () => {
+  return (
+    process.env.CLIENT_URL ||
+    "http://localhost:5173"
+  ).replace(/\/$/, "");
+};
+
+// =========================================================
 // SEND VERIFICATION EMAIL
 // =========================================================
 
-const sendVerificationEmail = async (user, verificationToken) => {
+const sendVerificationEmail = async (
+  user,
+  verificationToken
+) => {
   const transporter = createTransporter();
 
   await transporter.verify();
 
-  const frontendUrl =
-    process.env.CLIENT_URL || "http://localhost:5173";
+  const frontendUrl = getFrontendUrl();
 
   const verificationLink =
-  `https://pizzacraft-delta.vercel.app/verify-email?token=${encodeURIComponent(
-    verificationToken
-  )}`;
+    `${frontendUrl}/verify-email?token=${encodeURIComponent(
+      verificationToken
+    )}`;
+
   await transporter.sendMail({
-  from: "meerabasif04@gmail.com",
-  to: user.email,
-  subject: "Verify your PizzaCraft account",
-  html: `
-    <!DOCTYPE html>
+    from:
+      process.env.EMAIL_FROM ||
+      process.env.EMAIL_USER,
+
+    to: user.email,
+
+    subject:
+      "Verify your PizzaCraft account",
+
+    html: `
+      <!DOCTYPE html>
       <html>
-      <body style="font-family:Arial,sans-serif;background:#f7f3ef;padding:30px;">
+      <body style="
+        font-family: Arial, sans-serif;
+        background: #f7f3ef;
+        padding: 30px;
+      ">
+
         <div style="
-          max-width:600px;
-          margin:auto;
-          background:white;
-          padding:40px;
-          border-radius:16px;
+          max-width: 600px;
+          margin: auto;
+          background: white;
+          padding: 40px;
+          border-radius: 16px;
         ">
 
-          <h1 style="color:#e85d04;">
-            Welcome to PizzaCraft
+          <h1 style="color: #e85d04;">
+            Welcome to PizzaCraft 🍕
           </h1>
 
           <p>
@@ -80,21 +105,23 @@ const sendVerificationEmail = async (user, verificationToken) => {
             Please verify your email address.
           </p>
 
-          <p style="margin:30px 0;">
+          <p style="margin: 30px 0;">
+
             <a
               href="${verificationLink}"
               style="
-                display:inline-block;
-                padding:14px 24px;
-                background:#e85d04;
-                color:white;
-                text-decoration:none;
-                border-radius:8px;
-                font-weight:bold;
+                display: inline-block;
+                padding: 14px 24px;
+                background: #e85d04;
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: bold;
               "
             >
               Verify My Email
             </a>
+
           </p>
 
           <p>
@@ -102,18 +129,19 @@ const sendVerificationEmail = async (user, verificationToken) => {
             <strong>24 hours</strong>.
           </p>
 
-          <p style="color:#756963;">
+          <p style="color: #756963;">
             If you did not create this account,
             you can safely ignore this email.
           </p>
 
           <hr>
 
-          <p style="color:#756963;">
+          <p style="color: #756963;">
             PizzaCraft - Fresh pizzas, bold flavours
           </p>
 
         </div>
+
       </body>
       </html>
     `,
@@ -124,41 +152,50 @@ const sendVerificationEmail = async (user, verificationToken) => {
 // SEND PASSWORD RESET EMAIL
 // =========================================================
 
-const sendPasswordResetEmail = async (user, resetToken) => {
+const sendPasswordResetEmail = async (
+  user,
+  resetToken
+) => {
   const transporter = createTransporter();
 
   await transporter.verify();
 
-  const frontendUrl =
-    process.env.CLIENT_URL || "http://localhost:5173";
+  const frontendUrl = getFrontendUrl();
 
   const resetLink =
-  `https://pizzacraft-delta.vercel.app/reset-password?token=${encodeURIComponent(
-    resetToken
-  )}`;
+    `${frontendUrl}/reset-password?token=${encodeURIComponent(
+      resetToken
+    )}`;
 
   await transporter.sendMail({
-  from: "meerabasif04@gmail.com",
-  to: user.email,
-  subject: "Reset your PizzaCraft password",
-  html: `
-    <!DOCTYPE html>
+    from:
+      process.env.EMAIL_FROM ||
+      process.env.EMAIL_USER,
+
+    to: user.email,
+
+    subject:
+      "Reset your PizzaCraft password",
+
+    html: `
+      <!DOCTYPE html>
       <html>
+
       <body style="
-        font-family:Arial,sans-serif;
-        background:#fffaf5;
-        padding:30px;
+        font-family: Arial, sans-serif;
+        background: #fffaf5;
+        padding: 30px;
       ">
 
         <div style="
-          max-width:600px;
-          margin:auto;
-          background:white;
-          padding:40px;
-          border-radius:16px;
+          max-width: 600px;
+          margin: auto;
+          background: white;
+          padding: 40px;
+          border-radius: 16px;
         ">
 
-          <h1 style="color:#e85d04;">
+          <h1 style="color: #e85d04;">
             PizzaCraft Password Reset
           </h1>
 
@@ -171,21 +208,23 @@ const sendPasswordResetEmail = async (user, resetToken) => {
             PizzaCraft account password.
           </p>
 
-          <p style="margin:30px 0;">
+          <p style="margin: 30px 0;">
+
             <a
               href="${resetLink}"
               style="
-                display:inline-block;
-                padding:14px 24px;
-                background:#e85d04;
-                color:white;
-                text-decoration:none;
-                border-radius:8px;
-                font-weight:bold;
+                display: inline-block;
+                padding: 14px 24px;
+                background: #e85d04;
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: bold;
               "
             >
               Reset My Password
             </a>
+
           </p>
 
           <p>
@@ -193,14 +232,14 @@ const sendPasswordResetEmail = async (user, resetToken) => {
             <strong>1 hour</strong>.
           </p>
 
-          <p style="color:#756963;">
+          <p style="color: #756963;">
             If you did not request a password reset,
             you can safely ignore this email.
           </p>
 
           <hr>
 
-          <p style="color:#756963;">
+          <p style="color: #756963;">
             PizzaCraft - Fresh pizzas, bold flavours
           </p>
 
@@ -232,7 +271,8 @@ const register = async (req, res) => {
     }
 
     const trimmedName = name.trim();
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail =
+      email.trim().toLowerCase();
 
     if (trimmedName.length < 2) {
       return res.status(400).json({
@@ -249,9 +289,10 @@ const register = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({
-      email: normalizedEmail,
-    });
+    const existingUser =
+      await User.findOne({
+        email: normalizedEmail,
+      });
 
     if (existingUser) {
       return res.status(400).json({
@@ -269,7 +310,8 @@ const register = async (req, res) => {
 
     const verificationExpires =
       new Date(
-        Date.now() + 24 * 60 * 60 * 1000
+        Date.now() +
+          24 * 60 * 60 * 1000
       );
 
     const user = await User.create({
@@ -278,8 +320,10 @@ const register = async (req, res) => {
       password: hashedPassword,
       role: "user",
       isVerified: false,
-      emailVerificationToken: verificationToken,
-      emailVerificationExpires: verificationExpires,
+      emailVerificationToken:
+        verificationToken,
+      emailVerificationExpires:
+        verificationExpires,
     });
 
     try {
@@ -293,7 +337,9 @@ const register = async (req, res) => {
         emailError.message
       );
 
-      await User.findByIdAndDelete(user._id);
+      await User.findByIdAndDelete(
+        user._id
+      );
 
       return res.status(500).json({
         success: false,
@@ -307,6 +353,7 @@ const register = async (req, res) => {
       message:
         "Registration successful. Please check your email to verify your account.",
     });
+
   } catch (error) {
     console.error(
       "Registration error:",
@@ -328,7 +375,8 @@ const register = async (req, res) => {
 const verifyEmail = async (req, res) => {
   try {
     const token =
-      req.query.token || req.params.token;
+      req.query.token ||
+      req.params.token;
 
     if (!token) {
       return res.status(400).json({
@@ -338,12 +386,13 @@ const verifyEmail = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({
-      emailVerificationToken: token,
-      emailVerificationExpires: {
-        $gt: new Date(),
-      },
-    });
+    const user =
+      await User.findOne({
+        emailVerificationToken: token,
+        emailVerificationExpires: {
+          $gt: new Date(),
+        },
+      });
 
     if (!user) {
       return res.status(400).json({
@@ -354,8 +403,12 @@ const verifyEmail = async (req, res) => {
     }
 
     user.isVerified = true;
-    user.emailVerificationToken = null;
-    user.emailVerificationExpires = null;
+
+    user.emailVerificationToken =
+      null;
+
+    user.emailVerificationExpires =
+      null;
 
     await user.save();
 
@@ -369,6 +422,7 @@ const verifyEmail = async (req, res) => {
         isVerified: true,
       },
     });
+
   } catch (error) {
     console.error(
       "Email verification error:",
@@ -402,9 +456,10 @@ const resendVerificationEmail =
       const normalizedEmail =
         email.trim().toLowerCase();
 
-      const user = await User.findOne({
-        email: normalizedEmail,
-      });
+      const user =
+        await User.findOne({
+          email: normalizedEmail,
+        });
 
       if (!user) {
         return res.status(404).json({
@@ -429,7 +484,8 @@ const resendVerificationEmail =
 
       user.emailVerificationExpires =
         new Date(
-          Date.now() + 24 * 60 * 60 * 1000
+          Date.now() +
+            24 * 60 * 60 * 1000
         );
 
       await user.save();
@@ -444,6 +500,7 @@ const resendVerificationEmail =
         message:
           "A new verification email has been sent.",
       });
+
     } catch (error) {
       console.error(
         "Resend verification error:",
@@ -480,9 +537,10 @@ const login = async (req, res) => {
     const normalizedEmail =
       email.trim().toLowerCase();
 
-    const user = await User.findOne({
-      email: normalizedEmail,
-    });
+    const user =
+      await User.findOne({
+        email: normalizedEmail,
+      });
 
     if (!user) {
       return res.status(401).json({
@@ -506,6 +564,7 @@ const login = async (req, res) => {
       });
     }
 
+    // Admin does not need email verification
     if (
       user.role !== "admin" &&
       !user.isVerified
@@ -539,6 +598,7 @@ const login = async (req, res) => {
       success: true,
       message: "Login successful.",
       token,
+
       user: {
         id: user._id,
         name: user.name,
@@ -547,6 +607,7 @@ const login = async (req, res) => {
         isVerified: user.isVerified,
       },
     });
+
   } catch (error) {
     console.error(
       "Login error:",
@@ -565,7 +626,10 @@ const login = async (req, res) => {
 // FORGOT PASSWORD
 // =========================================================
 
-const forgotPassword = async (req, res) => {
+const forgotPassword = async (
+  req,
+  res
+) => {
   try {
     const { email } = req.body;
 
@@ -580,10 +644,12 @@ const forgotPassword = async (req, res) => {
     const normalizedEmail =
       email.trim().toLowerCase();
 
-    const user = await User.findOne({
-      email: normalizedEmail,
-    });
+    const user =
+      await User.findOne({
+        email: normalizedEmail,
+      });
 
+    // Don't reveal whether account exists
     if (!user) {
       return res.json({
         success: true,
@@ -597,7 +663,8 @@ const forgotPassword = async (req, res) => {
 
     const resetExpires =
       new Date(
-        Date.now() + 60 * 60 * 1000
+        Date.now() +
+          60 * 60 * 1000
       );
 
     user.passwordResetToken =
@@ -636,6 +703,7 @@ const forgotPassword = async (req, res) => {
       message:
         "Password reset link has been sent to your email.",
     });
+
   } catch (error) {
     console.error(
       "Forgot password error:",
@@ -654,15 +722,13 @@ const forgotPassword = async (req, res) => {
 // RESET PASSWORD
 // =========================================================
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (
+  req,
+  res
+) => {
   try {
-    const {
-      token,
-    } = req.params;
-
-    const {
-      password,
-    } = req.body;
+    const { token } = req.params;
+    const { password } = req.body;
 
     if (!token) {
       return res.status(400).json({
@@ -688,12 +754,13 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({
-      passwordResetToken: token,
-      passwordResetExpires: {
-        $gt: new Date(),
-      },
-    });
+    const user =
+      await User.findOne({
+        passwordResetToken: token,
+        passwordResetExpires: {
+          $gt: new Date(),
+        },
+      });
 
     if (!user) {
       return res.status(400).json({
@@ -709,8 +776,11 @@ const resetPassword = async (req, res) => {
         10
       );
 
-    user.passwordResetToken = null;
-    user.passwordResetExpires = null;
+    user.passwordResetToken =
+      null;
+
+    user.passwordResetExpires =
+      null;
 
     await user.save();
 
@@ -719,6 +789,7 @@ const resetPassword = async (req, res) => {
       message:
         "Password reset successfully. You can now login.",
     });
+
   } catch (error) {
     console.error(
       "Reset password error:",
