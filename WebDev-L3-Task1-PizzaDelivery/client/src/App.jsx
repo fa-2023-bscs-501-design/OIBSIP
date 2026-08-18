@@ -1,7 +1,8 @@
-const API_URL = "https://pizzacraft-delta.vercel.app";
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import AdminDashboard from "./AdminDashboard";
+
+const API_URL = "http://localhost:5000";
 
 /* =========================================================
    PIZZAS
