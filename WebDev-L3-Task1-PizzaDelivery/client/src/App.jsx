@@ -428,21 +428,20 @@ function App() {
     try {
       setResetLoading(true);
 
-      const response = await fetch(
-        `${API_URL}/api/auth/reset-password?token=${encodeURIComponent(
-          resetToken
-        )}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            password: resetPassword,
-          }),
-        }
-      );
+     const response = await fetch(
+  `${API_URL}/api/auth/reset-password/${encodeURIComponent(
+    resetToken
+  )}`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      password: resetPassword,
+    }),
+  }
+);
 
       const data =
         await getResponseData(
