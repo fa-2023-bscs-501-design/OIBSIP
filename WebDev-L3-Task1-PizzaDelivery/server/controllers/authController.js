@@ -65,7 +65,7 @@ const sendVerificationEmail = async (
       verificationToken
     )}`;
 
-  await transporter.sendMail({
+  const info = await transporter.sendMail({
     from:
       process.env.EMAIL_FROM ||
       process.env.EMAIL_USER,
@@ -146,6 +146,12 @@ const sendVerificationEmail = async (
       </html>
     `,
   });
+
+  console.log("✅ PASSWORD RESET EMAIL SENT");
+console.log("Message ID:", info.messageId);
+console.log("Accepted:", info.accepted);
+console.log("Rejected:", info.rejected);
+console.log("Response:", info.response);
 };
 
 // =========================================================
@@ -167,7 +173,7 @@ const sendPasswordResetEmail = async (
       resetToken
     )}`;
 
-  await transporter.sendMail({
+  const info = await transporter.sendMail({
     from:
       process.env.EMAIL_FROM ||
       process.env.EMAIL_USER,
@@ -180,6 +186,8 @@ const sendPasswordResetEmail = async (
     html: `
       <!DOCTYPE html>
       <html>
+
+
 
       <body style="
         font-family: Arial, sans-serif;
@@ -249,6 +257,12 @@ const sendPasswordResetEmail = async (
       </html>
     `,
   });
+
+  console.log("✅ PASSWORD RESET EMAIL SENT");
+console.log("Message ID:", info.messageId);
+console.log("Accepted:", info.accepted);
+console.log("Rejected:", info.rejected);
+console.log("Response:", info.response);
 };
 
 // =========================================================

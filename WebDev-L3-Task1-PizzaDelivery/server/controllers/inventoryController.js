@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Inventory = require("../models/Inventory");
 
 // ===============================
@@ -38,15 +39,59 @@ const addInventoryItem = async (req, res) => {
       lowStockThreshold,
     } = req.body;
 
-    if (!name || !category) {
+    if (
+      typeof name !== "string" ||
+      typeof category !== "string" ||
+      !name.trim() ||
+      !category.trim()
+    ) {
       return res.status(400).json({
         success: false,
         message: "Name and category are required",
       });
     }
 
+    const trimmedName = name.trim();
+    const trimmedCategory = category.trim();
+
+    // Validate stock
+    const stockValue =
+      stock === undefined ? 0 : Number(stock);
+
+    if (
+      !Number.isFinite(stockValue) ||
+      stockValue < 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid stock value",
+      });
+    }
+
+    // Validate threshold
+    const thresholdValue =
+      lowStockThreshold === undefined
+        ? 20
+        : Number(lowStockThreshold);
+
+    if (
+      !Number.isFinite(thresholdValue) ||
+      thresholdValue < 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid low stock threshold",
+      });
+    }
+
     const existingItem = await Inventory.findOne({
-      name: name.trim(),
+      name: {
+        $regex: `^${trimmedName.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          "\\$&"
+        )}$`,
+        $options: "i",
+      },
     });
 
     if (existingItem) {
@@ -57,13 +102,10 @@ const addInventoryItem = async (req, res) => {
     }
 
     const item = await Inventory.create({
-      name: name.trim(),
-      category,
-      stock: Number(stock) || 0,
-      lowStockThreshold:
-        lowStockThreshold !== undefined
-          ? Number(lowStockThreshold)
-          : 20,
+      name: trimmedName,
+      category: trimmedCategory,
+      stock: stockValue,
+      lowStockThreshold: thresholdValue,
     });
 
     return res.status(201).json({
@@ -90,9 +132,20 @@ const updateStock = async (req, res) => {
     const { stock } = req.body;
 
     if (
+      !mongoose.Types.ObjectId.isValid(req.params.id)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid inventory item ID",
+      });
+    }
+
+    const stockValue = Number(stock);
+
+    if (
       stock === undefined ||
-      Number.isNaN(Number(stock)) ||
-      Number(stock) < 0
+      !Number.isFinite(stockValue) ||
+      stockValue < 0
     ) {
       return res.status(400).json({
         success: false,
@@ -103,7 +156,7 @@ const updateStock = async (req, res) => {
     const item = await Inventory.findByIdAndUpdate(
       req.params.id,
       {
-        stock: Number(stock),
+        stock: stockValue,
       },
       {
         new: true,
@@ -142,9 +195,21 @@ const updateThreshold = async (req, res) => {
     const { lowStockThreshold } = req.body;
 
     if (
+      !mongoose.Types.ObjectId.isValid(req.params.id)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid inventory item ID",
+      });
+    }
+
+    const thresholdValue =
+      Number(lowStockThreshold);
+
+    if (
       lowStockThreshold === undefined ||
-      Number.isNaN(Number(lowStockThreshold)) ||
-      Number(lowStockThreshold) < 0
+      !Number.isFinite(thresholdValue) ||
+      thresholdValue < 0
     ) {
       return res.status(400).json({
         success: false,
@@ -155,7 +220,7 @@ const updateThreshold = async (req, res) => {
     const item = await Inventory.findByIdAndUpdate(
       req.params.id,
       {
-        lowStockThreshold: Number(lowStockThreshold),
+        lowStockThreshold: thresholdValue,
       },
       {
         new: true,
@@ -172,7 +237,8 @@ const updateThreshold = async (req, res) => {
 
     return res.json({
       success: true,
-      message: "Low stock threshold updated successfully",
+      message:
+        "Low stock threshold updated successfully",
       item,
     });
   } catch (error) {
