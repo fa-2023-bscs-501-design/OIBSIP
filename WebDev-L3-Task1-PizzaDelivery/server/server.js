@@ -22,7 +22,15 @@ app.use(
 );
 
 app.options(/.*/, cors());
+
+
 app.use(express.json());
+
+app.use("/api/auth", authRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api/payment", paymentRoutes);
+
 
 // =========================================================
 // MONGODB CONNECTION
