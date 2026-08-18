@@ -1,7 +1,13 @@
+import "./AdminDashboard.css";
+import { useEffect, useState } from "react";
 const API_URL =
   "https://pizzacraft-delta.vercel.app";
-  import "./AdminDashboard.css";
-import { useEffect, useState } from "react";
+
+  `${API_URL}/api/orders/admin`
+  `${API_URL}/api/inventory`
+  `${API_URL}/api/orders/admin/${orderId}/status`
+  `${API_URL}/api/inventory/${itemId}/stock`
+  `${API_URL}/api/inventory/${itemId}/threshold`
 
 function AdminDashboard() {
   const [orders, setOrders] = useState([]);
@@ -23,77 +29,76 @@ function AdminDashboard() {
   // ===============================
 
   const fetchOrders = async () => {
-    try {
-      const response = await fetch(
-        '${API_URL}/api/orders/admin',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Failed to fetch orders"
-        );
+  try {
+    const response = await fetch(
+      `${API_URL}/api/orders/admin`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      if (data.success) {
-        setOrders(data.orders || []);
-      }
-    } catch (error) {
-      console.error(
-        "Admin orders fetch error:",
-        error
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Failed to fetch orders"
       );
-    } finally {
-      setLoading(false);
     }
-  };
+
+    if (data.success) {
+      setOrders(data.orders || []);
+    }
+  } catch (error) {
+    console.error(
+      "Admin orders fetch error:",
+      error
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ===============================
   // FETCH INVENTORY
   // ===============================
 
   const fetchInventory = async () => {
-    try {
-      const response = await fetch(
-        '${API_URL}/api/inventory',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Failed to fetch inventory"
-        );
+  try {
+    const response = await fetch(
+      `${API_URL}/api/inventory`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      if (data.success) {
-        setInventory(data.inventory || []);
-      }
-    } catch (error) {
-      console.error(
-        "Inventory fetch error:",
-        error
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Failed to fetch inventory"
       );
-
-      alert(error.message);
-    } finally {
-      setInventoryLoading(false);
     }
-  };
 
+    if (data.success) {
+      setInventory(data.inventory || []);
+    }
+  } catch (error) {
+    console.error(
+      "Inventory fetch error:",
+      error
+    );
+
+    alert(error.message);
+  } finally {
+    setInventoryLoading(false);
+  }
+};
   // ===============================
   // LOAD DATA
   // ===============================
