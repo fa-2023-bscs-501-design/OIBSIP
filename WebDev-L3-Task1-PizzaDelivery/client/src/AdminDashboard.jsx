@@ -3,11 +3,6 @@ import { useEffect, useState } from "react";
 const API_URL =
   "https://pizzacraft-delta.vercel.app";
 
-  `${API_URL}/api/orders/admin`
-  `${API_URL}/api/inventory`
-  `${API_URL}/api/orders/admin/${orderId}/status`
-  `${API_URL}/api/inventory/${itemId}/stock`
-  `${API_URL}/api/inventory/${itemId}/threshold`
 
 function AdminDashboard() {
   const [orders, setOrders] = useState([]);
