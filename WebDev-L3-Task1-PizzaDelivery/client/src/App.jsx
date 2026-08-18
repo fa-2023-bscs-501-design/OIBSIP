@@ -148,27 +148,66 @@ const toppingOptions = [
 ];
 
 /* =========================================================
+   SAFE JSON HELPER
+========================================================= */
+
+const getResponseData = async (response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Invalid JSON response:", text);
+
+    throw new Error(
+      `Server returned an invalid response (${response.status}).`
+    );
+  }
+};
+
+/* =========================================================
    APP
 ========================================================= */
 
 function App() {
   /* =======================================================
-     RESET PASSWORD PAGE
+     PAGE DETECTION
   ======================================================= */
 
+  const currentPath = window.location.pathname;
+
   const isResetPasswordPage =
-    window.location.pathname === "/reset-password";
+    currentPath === "/reset-password";
+
+  const isVerifyEmailPage =
+    currentPath === "/verify-email";
 
   const resetToken = new URLSearchParams(
     window.location.search
   ).get("token");
 
-  const [resetPassword, setResetPassword] = useState("");
+  /* =======================================================
+     RESET PASSWORD
+  ======================================================= */
+
+  const [resetPassword, setResetPassword] =
+    useState("");
+
   const [confirmResetPassword, setConfirmResetPassword] =
     useState("");
-  const [resetLoading, setResetLoading] = useState(false);
-  const [resetMessage, setResetMessage] = useState("");
-  const [resetError, setResetError] = useState("");
+
+  const [resetLoading, setResetLoading] =
+    useState(false);
+
+  const [resetMessage, setResetMessage] =
+    useState("");
+
+  const [resetError, setResetError] =
+    useState("");
 
   /* =======================================================
      MAIN STATES
@@ -180,8 +219,11 @@ function App() {
   const [builderOpen, setBuilderOpen] =
     useState(false);
 
-  const [cart, setCart] = useState([]);
-  const [cartOpen, setCartOpen] = useState(false);
+  const [cart, setCart] =
+    useState([]);
+
+  const [cartOpen, setCartOpen] =
+    useState(false);
 
   /* =======================================================
      AUTH
@@ -200,8 +242,11 @@ function App() {
       )
     );
 
-  const [userName, setUserName] = useState("");
-  const [userRole, setUserRole] = useState("");
+  const [userName, setUserName] =
+    useState("");
+
+  const [userRole, setUserRole] =
+    useState("");
 
   const [loginEmail, setLoginEmail] =
     useState("");
@@ -289,7 +334,9 @@ function App() {
     try {
       return (
         JSON.parse(
-          localStorage.getItem("pizzaCraftOrders")
+          localStorage.getItem(
+            "pizzaCraftOrders"
+          )
         ) || []
       );
     } catch {
@@ -298,10 +345,47 @@ function App() {
   });
 
   /* =========================================================
+     LOAD USER
+  ========================================================= */
+
+  useEffect(() => {
+    try {
+      const savedUser = JSON.parse(
+        localStorage.getItem(
+          "pizzaCraftUser"
+        )
+      );
+
+      if (savedUser) {
+        setUserName(
+          savedUser.name ||
+            savedUser.username ||
+            savedUser.email?.split("@")[0] ||
+            ""
+        );
+
+        setUserRole(
+          savedUser.role || ""
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Load saved user error:",
+        error
+      );
+
+      setUserName("");
+      setUserRole("");
+    }
+  }, []);
+
+  /* =========================================================
      RESET PASSWORD
   ========================================================= */
 
-  const handleResetPassword = async (event) => {
+  const handleResetPassword = async (
+    event
+  ) => {
     event.preventDefault();
 
     setResetMessage("");
@@ -345,7 +429,7 @@ function App() {
       setResetLoading(true);
 
       const response = await fetch(
-        `${API_URL}/api/auth/reset-password/${encodeURIComponent(
+        `${API_URL}/api/auth/reset-password?token=${encodeURIComponent(
           resetToken
         )}`,
         {
@@ -361,7 +445,9 @@ function App() {
       );
 
       const data =
-        await response.json();
+        await getResponseData(
+          response
+        );
 
       if (
         !response.ok ||
@@ -388,7 +474,7 @@ function App() {
 
       setResetError(
         error.message ||
-          "Unable to reset password."
+          "Unable to reset password. Please try again."
       );
     } finally {
       setResetLoading(false);
@@ -400,10 +486,7 @@ function App() {
   ========================================================= */
 
   useEffect(() => {
-    const path =
-      window.location.pathname;
-
-    if (path !== "/verify-email") {
+    if (!isVerifyEmailPage) {
       return;
     }
 
@@ -438,11 +521,20 @@ function App() {
             await fetch(
               `${API_URL}/api/auth/verify-email?token=${encodeURIComponent(
                 token
-              )}`
+              )}`,
+              {
+                method: "GET",
+                headers: {
+                  Accept:
+                    "application/json",
+                },
+              }
             );
 
           const data =
-            await response.json();
+            await getResponseData(
+              response
+            );
 
           if (
             !response.ok ||
@@ -480,66 +572,7 @@ function App() {
       };
 
     verifyUserEmail();
-  }, []);
-
-  /* =========================================================
-     LOAD USER
-  ========================================================= */
-
-  useEffect(() => {
-    try {
-      const savedUser =
-        JSON.parse(
-          localStorage.getItem(
-            "pizzaCraftUser"
-          )
-        );
-
-      if (savedUser) {
-        setUserName(
-          savedUser.name ||
-            savedUser.username ||
-            savedUser.email?.split(
-              "@"
-            )[0] ||
-            ""
-        );
-
-        setUserRole(
-          savedUser.role || ""
-        );
-      }
-    } catch {
-      setUserName("");
-      setUserRole("");
-    }
-
-    if (
-      localStorage.getItem(
-        "pizzaCraftToken"
-      )
-    ) {
-      loadMyOrders();
-    }
-  }, []);
-
-  /* =========================================================
-     REAL-TIME ORDER STATUS
-  ========================================================= */
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      return;
-    }
-
-    const interval =
-      setInterval(() => {
-        loadMyOrders();
-      }, 5000);
-
-    return () =>
-      clearInterval(interval);
-  }, [isLoggedIn]);
+  }, [isVerifyEmailPage]);
 
   /* =========================================================
      LOAD ORDERS
@@ -563,12 +596,16 @@ function App() {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
+              Accept:
+                "application/json",
             },
           }
         );
 
       const data =
-        await response.json();
+        await getResponseData(
+          response
+        );
 
       if (
         !response.ok ||
@@ -580,8 +617,18 @@ function App() {
         );
       }
 
+      const loadedOrders =
+        data.orders || [];
+
       setOrders(
-        data.orders || []
+        loadedOrders
+      );
+
+      localStorage.setItem(
+        "pizzaCraftOrders",
+        JSON.stringify(
+          loadedOrders
+        )
       );
     } catch (error) {
       console.error(
@@ -590,6 +637,36 @@ function App() {
       );
     }
   };
+
+  /* =========================================================
+     LOAD ORDERS AFTER LOGIN
+  ========================================================= */
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      return;
+    }
+
+    loadMyOrders();
+  }, [isLoggedIn]);
+
+  /* =========================================================
+     REAL-TIME ORDER STATUS
+  ========================================================= */
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      return;
+    }
+
+    const interval =
+      setInterval(() => {
+        loadMyOrders();
+      }, 5000);
+
+    return () =>
+      clearInterval(interval);
+  }, [isLoggedIn]);
 
   /* =========================================================
      INVENTORY
@@ -605,7 +682,10 @@ function App() {
         );
 
       if (!token) {
-        setInventoryLoading(false);
+        alert(
+          "Please login again."
+        );
+
         return;
       }
 
@@ -616,12 +696,16 @@ function App() {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
+              Accept:
+                "application/json",
             },
           }
         );
 
       const data =
-        await response.json();
+        await getResponseData(
+          response
+        );
 
       if (
         !response.ok ||
@@ -655,90 +739,95 @@ function App() {
      UPDATE STOCK
   ========================================================= */
 
-  const updateInventoryStock = async (
-    id,
-    newStock
-  ) => {
-    try {
-      const token =
-        localStorage.getItem(
-          "pizzaCraftToken"
+  const updateInventoryStock =
+    async (
+      id,
+      newStock
+    ) => {
+      try {
+        const token =
+          localStorage.getItem(
+            "pizzaCraftToken"
+          );
+
+        if (!token) {
+          alert(
+            "Please login again."
+          );
+          return;
+        }
+
+        const stock =
+          Number(newStock);
+
+        if (
+          Number.isNaN(stock) ||
+          stock < 0
+        ) {
+          alert(
+            "Please enter a valid stock value."
+          );
+          return;
+        }
+
+        const response =
+          await fetch(
+            `${API_URL}/api/inventory/${id}/stock`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Authorization: `Bearer ${token}`,
+                Accept:
+                  "application/json",
+              },
+              body: JSON.stringify({
+                stock,
+              }),
+            }
+          );
+
+        const data =
+          await getResponseData(
+            response
+          );
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.message ||
+              "Failed to update stock."
+          );
+        }
+
+        setInventory(
+          (current) =>
+            current.map(
+              (item) =>
+                item._id === id
+                  ? data.item
+                  : item
+            )
         );
 
-      if (!token) {
         alert(
-          "Please login again."
+          "Stock updated successfully."
         );
-        return;
-      }
+      } catch (error) {
+        console.error(
+          "Update stock error:",
+          error
+        );
 
-      const stock =
-        Number(newStock);
-
-      if (
-        Number.isNaN(stock) ||
-        stock < 0
-      ) {
         alert(
-          "Please enter a valid stock value."
-        );
-        return;
-      }
-
-      const response =
-        await fetch(
-          `${API_URL}/api/inventory/${id}/stock`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type":
-                "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              stock,
-            }),
-          }
-        );
-
-      const data =
-        await response.json();
-
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-        throw new Error(
-          data.message ||
-            "Failed to update stock."
+          error.message ||
+            "Something went wrong while updating stock."
         );
       }
-
-      setInventory(
-        (current) =>
-          current.map(
-            (item) =>
-              item._id === id
-                ? data.item
-                : item
-          )
-      );
-
-      alert(
-        "Stock updated successfully."
-      );
-    } catch (error) {
-      console.error(
-        "Update stock error:",
-        error
-      );
-
-      alert(
-        error.message ||
-          "Something went wrong while updating stock."
-      );
-    }
-  };
+    };
 
   /* =========================================================
      UPDATE THRESHOLD
@@ -786,6 +875,8 @@ function App() {
                 "Content-Type":
                   "application/json",
                 Authorization: `Bearer ${token}`,
+                Accept:
+                  "application/json",
               },
               body: JSON.stringify({
                 lowStockThreshold,
@@ -794,7 +885,9 @@ function App() {
           );
 
         const data =
-          await response.json();
+          await getResponseData(
+            response
+          );
 
         if (
           !response.ok ||
@@ -839,8 +932,7 @@ function App() {
   const filteredPizzas =
     useMemo(() => {
       if (
-        activeCategory ===
-        "All"
+        activeCategory === "All"
       ) {
         return pizzas;
       }
@@ -981,12 +1073,21 @@ function App() {
       event.preventDefault();
 
       if (
-        !registerName ||
-        !registerEmail ||
+        !registerName.trim() ||
+        !registerEmail.trim() ||
         !registerPassword
       ) {
         alert(
           "Please fill all fields."
+        );
+        return;
+      }
+
+      if (
+        registerPassword.length < 6
+      ) {
+        alert(
+          "Password must be at least 6 characters long."
         );
         return;
       }
@@ -1002,10 +1103,16 @@ function App() {
               headers: {
                 "Content-Type":
                   "application/json",
+                Accept:
+                  "application/json",
               },
               body: JSON.stringify({
-                name: registerName,
-                email: registerEmail,
+                name:
+                  registerName.trim(),
+                email:
+                  registerEmail
+                    .trim()
+                    .toLowerCase(),
                 password:
                   registerPassword,
               }),
@@ -1013,9 +1120,14 @@ function App() {
           );
 
         const data =
-          await response.json();
+          await getResponseData(
+            response
+          );
 
-        if (!response.ok) {
+        if (
+          !response.ok ||
+          !data.success
+        ) {
           throw new Error(
             data.message ||
               "Registration failed."
@@ -1027,14 +1139,22 @@ function App() {
         );
 
         setRegisterMode(false);
+
         setLoginEmail(
           registerEmail
+            .trim()
+            .toLowerCase()
         );
 
         setRegisterName("");
         setRegisterEmail("");
         setRegisterPassword("");
       } catch (error) {
+        console.error(
+          "Registration error:",
+          error
+        );
+
         alert(
           error.message ||
             "Registration failed."
@@ -1053,7 +1173,7 @@ function App() {
       event.preventDefault();
 
       if (
-        !loginEmail ||
+        !loginEmail.trim() ||
         !loginPassword
       ) {
         alert(
@@ -1073,9 +1193,14 @@ function App() {
               headers: {
                 "Content-Type":
                   "application/json",
+                Accept:
+                  "application/json",
               },
               body: JSON.stringify({
-                email: loginEmail,
+                email:
+                  loginEmail
+                    .trim()
+                    .toLowerCase(),
                 password:
                   loginPassword,
               }),
@@ -1083,9 +1208,14 @@ function App() {
           );
 
         const data =
-          await response.json();
+          await getResponseData(
+            response
+          );
 
-        if (!response.ok) {
+        if (
+          !response.ok ||
+          !data.success
+        ) {
           throw new Error(
             data.message ||
               "Login failed."
@@ -1125,12 +1255,17 @@ function App() {
 
         closeLogin();
 
-        await loadMyOrders();
-
         alert(
           "Login successful! Welcome to PizzaCraft 🍕"
         );
+
+        await loadMyOrders();
       } catch (error) {
+        console.error(
+          "Login error:",
+          error
+        );
+
         alert(
           error.message ||
             "Login failed."
@@ -1171,15 +1306,20 @@ function App() {
               headers: {
                 "Content-Type":
                   "application/json",
+                Accept:
+                  "application/json",
               },
               body: JSON.stringify({
-                email,
+                email:
+                  email.toLowerCase(),
               }),
             }
           );
 
         const data =
-          await response.json();
+          await getResponseData(
+            response
+          );
 
         if (
           !response.ok ||
@@ -1216,7 +1356,10 @@ function App() {
 
   const handleForgotPassword =
     async () => {
-      if (!loginEmail) {
+      const email =
+        loginEmail.trim();
+
+      if (!email) {
         alert(
           "Please enter your email first."
         );
@@ -1232,15 +1375,20 @@ function App() {
               headers: {
                 "Content-Type":
                   "application/json",
+                Accept:
+                  "application/json",
               },
               body: JSON.stringify({
-                email: loginEmail,
+                email:
+                  email.toLowerCase(),
               }),
             }
           );
 
         const data =
-          await response.json();
+          await getResponseData(
+            response
+          );
 
         if (
           !response.ok ||
@@ -1460,8 +1608,8 @@ function App() {
     cart.reduce(
       (total, item) =>
         total +
-        item.price *
-          item.quantity,
+        Number(item.price || 0) *
+          Number(item.quantity || 0),
       0
     );
 
@@ -1469,7 +1617,7 @@ function App() {
     cart.reduce(
       (total, item) =>
         total +
-        item.quantity,
+        Number(item.quantity || 0),
       0
     );
 
@@ -1510,6 +1658,10 @@ function App() {
           return;
         }
 
+        /* -----------------------------------------------
+           CREATE DEMO PAYMENT
+        ------------------------------------------------ */
+
         const paymentResponse =
           await fetch(
             `${API_URL}/api/payment/create-order`,
@@ -1519,18 +1671,20 @@ function App() {
                 "Content-Type":
                   "application/json",
                 Authorization: `Bearer ${token}`,
+                Accept:
+                  "application/json",
               },
               body: JSON.stringify({
                 amount:
-                  Number(
-                    cartTotal
-                  ),
+                  Number(cartTotal),
               }),
             }
           );
 
         const paymentData =
-          await paymentResponse.json();
+          await getResponseData(
+            paymentResponse
+          );
 
         if (
           !paymentResponse.ok ||
@@ -1541,6 +1695,19 @@ function App() {
               "Unable to create payment order."
           );
         }
+
+        const paymentOrder =
+          paymentData.order;
+
+        if (!paymentOrder?.id) {
+          throw new Error(
+            "Payment order ID was not returned by the server."
+          );
+        }
+
+        /* -----------------------------------------------
+           DEMO PAYMENT CONFIRMATION
+        ------------------------------------------------ */
 
         const confirmPayment =
           window.confirm(
@@ -1555,27 +1722,33 @@ function App() {
         }
 
         alert(
-          `Payment successful! ✅\n\nPayment ID: ${paymentData.order.id}`
+          `Payment successful! ✅\n\nPayment ID: ${paymentOrder.id}`
         );
+
+        /* -----------------------------------------------
+           PREPARE ORDER ITEMS
+        ------------------------------------------------ */
 
         const orderItems =
           cart.map((item) => ({
             name: item.name,
             description:
-              item.description ||
-              "",
+              item.description || "",
             price: Number(
-              item.price
+              item.price || 0
             ),
             quantity: Number(
-              item.quantity
+              item.quantity || 1
             ),
             emoji:
               item.emoji || "🍕",
             customization:
-              item.customization ||
-              {},
+              item.customization || {},
           }));
+
+        /* -----------------------------------------------
+           CREATE ORDER
+        ------------------------------------------------ */
 
         const orderResponse =
           await fetch(
@@ -1586,15 +1759,17 @@ function App() {
                 "Content-Type":
                   "application/json",
                 Authorization: `Bearer ${token}`,
+                Accept:
+                  "application/json",
               },
               body: JSON.stringify({
                 items: orderItems,
                 totalAmount:
-                  Number(
-                    cartTotal
-                  ),
+                  Number(cartTotal),
+                paymentStatus:
+                  "paid",
                 paymentId:
-                  paymentData.order.id,
+                  paymentOrder.id,
                 paymentMethod:
                   "Demo Payment",
               }),
@@ -1602,7 +1777,9 @@ function App() {
           );
 
         const orderData =
-          await orderResponse.json();
+          await getResponseData(
+            orderResponse
+          );
 
         if (
           !orderResponse.ok ||
@@ -1614,21 +1791,37 @@ function App() {
           );
         }
 
-        setOrders(
-          (currentOrders) => [
-            orderData.order,
-            ...currentOrders,
-          ]
-        );
+        if (orderData.order) {
+          setOrders(
+            (currentOrders) => {
+              const updatedOrders = [
+                orderData.order,
+                ...currentOrders,
+              ];
+
+              localStorage.setItem(
+                "pizzaCraftOrders",
+                JSON.stringify(
+                  updatedOrders
+                )
+              );
+
+              return updatedOrders;
+            }
+          );
+        }
 
         setCart([]);
         setCartOpen(false);
 
         alert(
           `Order placed successfully! 🍕\n\nOrder ID: ${String(
-            orderData.order._id
+            orderData.order?._id ||
+              "N/A"
           ).slice(-8)}`
         );
+
+        await loadMyOrders();
 
         setMyOrdersOpen(true);
       } catch (error) {
@@ -1670,16 +1863,12 @@ function App() {
 
   /* =========================================================
      RESET PASSWORD PAGE
-     
-     IMPORTANT:
-     Ye return MAIN return se pehle hona chahiye.
   ========================================================= */
 
   if (isResetPasswordPage) {
     return (
       <div className="auth-page">
         <div className="auth-card">
-
           <div className="reset-password-logo">
             🍕
           </div>
@@ -1698,7 +1887,6 @@ function App() {
               handleResetPassword
             }
           >
-
             <input
               type="password"
               placeholder="New Password"
@@ -1710,6 +1898,8 @@ function App() {
                   event.target.value
                 )
               }
+              required
+              minLength={6}
             />
 
             <input
@@ -1723,6 +1913,8 @@ function App() {
                   event.target.value
                 )
               }
+              required
+              minLength={6}
             />
 
             {resetError && (
@@ -1748,7 +1940,6 @@ function App() {
                 ? "Resetting..."
                 : "Reset Password"}
             </button>
-
           </form>
 
           {resetMessage && (
@@ -1768,7 +1959,6 @@ function App() {
               Back to Login
             </button>
           )}
-
         </div>
       </div>
     );
@@ -1778,15 +1968,10 @@ function App() {
      EMAIL VERIFICATION PAGE
   ========================================================= */
 
-  if (
-    window.location.pathname ===
-    "/verify-email"
-  ) {
+  if (isVerifyEmailPage) {
     return (
       <section className="about-section email-verification-page">
-
         <div className="about-content">
-
           <div className="hero-badge">
             PIZZACRAFT • EMAIL VERIFICATION
           </div>
@@ -1862,7 +2047,6 @@ function App() {
               </p>
 
               <div className="resend-verification-box">
-
                 <h3>
                   Didn't receive a valid email?
                 </h3>
@@ -1884,6 +2068,7 @@ function App() {
                     setResendEmail(
                       event.target.value
                     );
+
                     setResendError("");
                     setResendMessage("");
                   }}
@@ -1915,7 +2100,6 @@ function App() {
                     ? "Sending..."
                     : "📧 Resend Verification Email"}
                 </button>
-
               </div>
 
               <button
@@ -1934,9 +2118,7 @@ function App() {
               </button>
             </>
           )}
-
         </div>
-
       </section>
     );
   }
@@ -1959,7 +2141,6 @@ function App() {
       ===================================================== */}
 
       <nav className="navbar">
-
         <button
           className="logo"
           onClick={() =>
@@ -1972,7 +2153,6 @@ function App() {
         </button>
 
         <div className="nav-links">
-
           <button
             onClick={() =>
               scrollToSection("home")
@@ -2000,11 +2180,9 @@ function App() {
           >
             About
           </button>
-
         </div>
 
         <div className="navbar-actions">
-
           {!isLoggedIn ? (
             <>
               <button
@@ -2023,7 +2201,6 @@ function App() {
             </>
           ) : (
             <>
-
               <button
                 className="nav-user-btn"
                 onClick={() =>
@@ -2048,7 +2225,6 @@ function App() {
               {userRole ===
                 "admin" && (
                 <>
-
                   <button
                     className="nav-admin-btn"
                     onClick={() =>
@@ -2069,7 +2245,6 @@ function App() {
                   >
                     📦 Inventory
                   </button>
-
                 </>
               )}
 
@@ -2091,12 +2266,9 @@ function App() {
               >
                 Logout
               </button>
-
             </>
           )}
-
         </div>
-
       </nav>
 
       {/* =====================================================
@@ -2107,9 +2279,7 @@ function App() {
         className="hero-section"
         id="home"
       >
-
         <div className="hero-content">
-
           <div className="hero-badge">
             🍕 FRESH • HOT • MADE FOR YOU
           </div>
@@ -2132,7 +2302,6 @@ function App() {
           </p>
 
           <div className="hero-buttons">
-
             <button
               className="primary-btn"
               onClick={
@@ -2150,23 +2319,16 @@ function App() {
             >
               Build Your Pizza
             </button>
-
           </div>
-
         </div>
 
         <div className="hero-pizza">
-
           <div className="pizza-visual">
-
             <div className="hero-pizza-art">
               🍕
             </div>
-
           </div>
-
         </div>
-
       </section>
 
       {/* =====================================================
@@ -2177,9 +2339,7 @@ function App() {
         className="categories-section"
         id="menu"
       >
-
         <div className="section-heading">
-
           <div className="hero-badge">
             OUR MENU
           </div>
@@ -2192,11 +2352,9 @@ function App() {
             Pick your favourite pizza
             and make it yours.
           </p>
-
         </div>
 
         <div className="category-list">
-
           {categories.map(
             (category) => (
               <button
@@ -2217,9 +2375,7 @@ function App() {
               </button>
             )
           )}
-
         </div>
-
       </section>
 
       {/* =====================================================
@@ -2227,27 +2383,21 @@ function App() {
       ===================================================== */}
 
       <section className="pizza-section">
-
         <div className="pizza-grid">
-
           {filteredPizzas.map(
             (pizza) => (
               <div
                 className="pizza-card"
                 key={pizza.id}
               >
-
                 <div className="pizza-image">
-
                   <img
                     src={pizza.image}
                     alt={pizza.name}
                   />
-
                 </div>
 
                 <div className="pizza-info">
-
                   <h3>
                     {pizza.name}
                   </h3>
@@ -2257,7 +2407,6 @@ function App() {
                   </p>
 
                   <div className="pizza-bottom">
-
                     <span className="price">
                       Rs.{" "}
                       {pizza.price}
@@ -2273,17 +2422,12 @@ function App() {
                     >
                       Add to Cart
                     </button>
-
                   </div>
-
                 </div>
-
               </div>
             )
           )}
-
         </div>
-
       </section>
 
       {/* =====================================================
@@ -2291,11 +2435,8 @@ function App() {
       ===================================================== */}
 
       <section className="builder-preview">
-
         <div className="builder-preview-inner">
-
           <div>
-
             <div className="hero-badge">
               PIZZA BUILDER
             </div>
@@ -2322,11 +2463,9 @@ function App() {
             >
               Start Building 🍕
             </button>
-
           </div>
 
           <div className="builder-steps">
-
             <div>
               <span>01</span>
               <strong>
@@ -2366,11 +2505,8 @@ function App() {
                 Freshly prepared for you.
               </small>
             </div>
-
           </div>
-
         </div>
-
       </section>
 
       {/* =====================================================
@@ -2379,9 +2515,7 @@ function App() {
 
       {builderOpen && (
         <section className="pizza-builder">
-
           <div className="section-heading builder-heading">
-
             <div className="hero-badge">
               CUSTOM PIZZA
             </div>
@@ -2394,21 +2528,21 @@ function App() {
               Select every detail and
               create something delicious.
             </p>
-
           </div>
 
-          <div className="builder-group">
+          {/* SIZE */}
 
+          <div className="builder-group">
             <h3>
               Choose Size
             </h3>
 
             <div className="builder-options">
-
               {Object.keys(
                 sizePrices
               ).map((item) => (
                 <button
+                  type="button"
                   key={item}
                   className={`builder-option ${
                     size === item
@@ -2431,23 +2565,22 @@ function App() {
                   </span>
                 </button>
               ))}
-
             </div>
-
           </div>
 
-          <div className="builder-group">
+          {/* CRUST */}
 
+          <div className="builder-group">
             <h3>
               Choose Crust
             </h3>
 
             <div className="builder-options">
-
               {Object.keys(
                 crustPrices
               ).map((item) => (
                 <button
+                  type="button"
                   key={item}
                   className={`builder-option ${
                     crust === item
@@ -2470,23 +2603,22 @@ function App() {
                   </span>
                 </button>
               ))}
-
             </div>
-
           </div>
 
-          <div className="builder-group">
+          {/* SAUCE */}
 
+          <div className="builder-group">
             <h3>
               Choose Sauce
             </h3>
 
             <div className="builder-options">
-
               {Object.keys(
                 saucePrices
               ).map((item) => (
                 <button
+                  type="button"
                   key={item}
                   className={`builder-option ${
                     sauce === item
@@ -2509,23 +2641,22 @@ function App() {
                   </span>
                 </button>
               ))}
-
             </div>
-
           </div>
 
-          <div className="builder-group">
+          {/* CHEESE */}
 
+          <div className="builder-group">
             <h3>
               Choose Cheese
             </h3>
 
             <div className="builder-options">
-
               {Object.keys(
                 cheesePrices
               ).map((item) => (
                 <button
+                  type="button"
                   key={item}
                   className={`builder-option ${
                     cheese === item
@@ -2548,22 +2679,21 @@ function App() {
                   </span>
                 </button>
               ))}
-
             </div>
-
           </div>
 
-          <div className="builder-group">
+          {/* TOPPINGS */}
 
+          <div className="builder-group">
             <h3>
               Add Toppings
             </h3>
 
             <div className="builder-options">
-
               {toppingOptions.map(
                 (topping) => (
                   <button
+                    type="button"
                     key={
                       topping.name
                     }
@@ -2580,7 +2710,6 @@ function App() {
                       )
                     }
                   >
-
                     <span>
                       {
                         topping.emoji
@@ -2599,19 +2728,16 @@ function App() {
                         topping.price
                       }
                     </span>
-
                   </button>
                 )
               )}
-
             </div>
-
           </div>
 
+          {/* SUMMARY */}
+
           <div className="builder-group builder-summary">
-
             <div>
-
               <div className="hero-badge">
                 YOUR CREATION
               </div>
@@ -2631,11 +2757,9 @@ function App() {
                     ", "
                   )}`}
               </p>
-
             </div>
 
             <div className="builder-total">
-
               <span>
                 Total
               </span>
@@ -2653,11 +2777,8 @@ function App() {
               >
                 Add to Cart
               </button>
-
             </div>
-
           </div>
-
         </section>
       )}
 
@@ -2669,9 +2790,7 @@ function App() {
         id="about"
         className="about-section"
       >
-
         <div className="about-content">
-
           <div className="hero-badge">
             ABOUT PIZZACRAFT
           </div>
@@ -2689,9 +2808,7 @@ function App() {
             pizza or create your own
             masterpiece from scratch.
           </p>
-
         </div>
-
       </section>
 
       {/* =====================================================
@@ -2705,35 +2822,31 @@ function App() {
             setCartOpen(false)
           }
         >
-
           <div
             className="cart-panel"
             onClick={(event) =>
               event.stopPropagation()
             }
           >
-
             <div className="modal-header">
-
               <h2>
                 Your Cart 🛒
               </h2>
 
               <button
                 className="close-btn"
+                type="button"
                 onClick={() =>
                   setCartOpen(false)
                 }
               >
                 ×
               </button>
-
             </div>
 
             {cart.length ===
             0 ? (
               <div className="cart-empty">
-
                 <div className="empty-icon">
                   🍕
                 </div>
@@ -2753,16 +2866,15 @@ function App() {
                     setCartOpen(
                       false
                     );
+
                     scrollToMenu();
                   }}
                 >
                   Explore Menu
                 </button>
-
               </div>
             ) : (
               <>
-
                 {cart.map(
                   (
                     item,
@@ -2772,13 +2884,11 @@ function App() {
                       className="cart-item"
                       key={`${item.id}-${index}`}
                     >
-
                       <div className="cart-item-image">
                         {item.emoji}
                       </div>
 
                       <div className="cart-item-info">
-
                         <h4>
                           {item.name}
                         </h4>
@@ -2803,12 +2913,11 @@ function App() {
                             }
                           </small>
                         )}
-
                       </div>
 
                       <div className="quantity-controls">
-
                         <button
+                          type="button"
                           className="quantity-btn"
                           onClick={() =>
                             decreaseQuantity(
@@ -2826,6 +2935,7 @@ function App() {
                         </strong>
 
                         <button
+                          type="button"
                           className="quantity-btn"
                           onClick={() =>
                             increaseQuantity(
@@ -2835,10 +2945,10 @@ function App() {
                         >
                           +
                         </button>
-
                       </div>
 
                       <button
+                        type="button"
                         className="close-btn"
                         onClick={() =>
                           removeFromCart(
@@ -2848,15 +2958,12 @@ function App() {
                       >
                         ×
                       </button>
-
                     </div>
                   )
                 )}
 
                 <div className="cart-total">
-
                   <div>
-
                     <strong>
                       Total
                     </strong>
@@ -2865,7 +2972,6 @@ function App() {
                       Rs.{" "}
                       {cartTotal}
                     </strong>
-
                   </div>
 
                   <button
@@ -2876,14 +2982,10 @@ function App() {
                   >
                     Place Order →
                   </button>
-
                 </div>
-
               </>
             )}
-
           </div>
-
         </div>
       )}
 
@@ -2896,16 +2998,13 @@ function App() {
           className="login-overlay"
           onClick={closeLogin}
         >
-
           <div
             className="login-modal"
             onClick={(event) =>
               event.stopPropagation()
             }
           >
-
             <div className="modal-header">
-
               <h2>
                 {registerMode
                   ? "Create Account"
@@ -2919,17 +3018,14 @@ function App() {
               >
                 ×
               </button>
-
             </div>
 
             {registerMode ? (
-
               <form
                 onSubmit={
                   handleRegister
                 }
               >
-
                 <input
                   type="text"
                   placeholder="Full Name"
@@ -2941,6 +3037,7 @@ function App() {
                       event.target.value
                     )
                   }
+                  required
                 />
 
                 <input
@@ -2954,6 +3051,7 @@ function App() {
                       event.target.value
                     )
                   }
+                  required
                 />
 
                 <input
@@ -2967,6 +3065,8 @@ function App() {
                       event.target.value
                     )
                   }
+                  minLength={6}
+                  required
                 />
 
                 <button
@@ -2982,9 +3082,7 @@ function App() {
                 </button>
 
                 <p className="auth-switch">
-
                   Already have an account?{" "}
-
                   <button
                     type="button"
                     onClick={() => {
@@ -3011,19 +3109,14 @@ function App() {
                   >
                     Login
                   </button>
-
                 </p>
-
               </form>
-
             ) : (
-
               <form
                 onSubmit={
                   handleLogin
                 }
               >
-
                 <input
                   type="email"
                   placeholder="Email Address"
@@ -3035,6 +3128,7 @@ function App() {
                       event.target.value
                     )
                   }
+                  required
                 />
 
                 <input
@@ -3048,6 +3142,7 @@ function App() {
                       event.target.value
                     )
                   }
+                  required
                 />
 
                 <button
@@ -3073,9 +3168,7 @@ function App() {
                 </button>
 
                 <p className="auth-switch">
-
                   Don't have an account?{" "}
-
                   <button
                     type="button"
                     onClick={() => {
@@ -3090,15 +3183,10 @@ function App() {
                   >
                     Register
                   </button>
-
                 </p>
-
               </form>
-
             )}
-
           </div>
-
         </div>
       )}
 
@@ -3113,22 +3201,20 @@ function App() {
             setMyOrdersOpen(false)
           }
         >
-
           <div
             className="login-modal orders-modal"
             onClick={(event) =>
               event.stopPropagation()
             }
           >
-
             <div className="modal-header">
-
               <h2>
                 My Orders 📦
               </h2>
 
               <button
                 className="close-btn"
+                type="button"
                 onClick={() =>
                   setMyOrdersOpen(
                     false
@@ -3137,13 +3223,11 @@ function App() {
               >
                 ×
               </button>
-
             </div>
 
             {userOrders.length ===
             0 ? (
               <div className="cart-empty">
-
                 <div className="empty-icon">
                   📦
                 </div>
@@ -3156,16 +3240,13 @@ function App() {
                   Your placed orders
                   will appear here.
                 </p>
-
               </div>
             ) : (
               <div>
-
                 {userOrders
                   .slice()
                   .reverse()
                   .map((order) => {
-
                     const trackingSteps =
                       [
                         "Pending",
@@ -3195,11 +3276,8 @@ function App() {
                             : ""
                         }`}
                       >
-
                         <div className="order-top">
-
                           <div>
-
                             <strong>
                               #
                               {order._id
@@ -3216,7 +3294,6 @@ function App() {
                                   ).toLocaleDateString()
                                 : ""}
                             </small>
-
                           </div>
 
                           <span
@@ -3233,16 +3310,14 @@ function App() {
                               order.status
                             }
                           </span>
-
                         </div>
 
                         <div className="order-summary">
-
                           <span>
                             {
                               order
                                 .items
-                                .length
+                                ?.length || 0
                             }{" "}
                             item(s)
                           </span>
@@ -3253,19 +3328,15 @@ function App() {
                               order.totalAmount
                             }
                           </strong>
-
                         </div>
 
                         {isCancelled ? (
-
                           <div className="cancelled-order-message">
-
                             <span className="tracking-icon">
                               ✕
                             </span>
 
                             <div>
-
                               <strong>
                                 Order Cancelled
                               </strong>
@@ -3275,21 +3346,15 @@ function App() {
                                 has been
                                 cancelled.
                               </small>
-
                             </div>
-
                           </div>
-
                         ) : (
-
                           <div className="order-tracking">
-
                             {trackingSteps.map(
                               (
                                 step,
                                 index
                               ) => {
-
                                 const completed =
                                   currentStep >=
                                   index;
@@ -3313,7 +3378,6 @@ function App() {
                                         : ""
                                     }`}
                                   >
-
                                     <div className="tracking-circle">
                                       {completed
                                         ? "✓"
@@ -3326,25 +3390,18 @@ function App() {
                                         step
                                       }
                                     </span>
-
                                   </div>
                                 );
                               }
                             )}
-
                           </div>
-
                         )}
-
                       </div>
                     );
                   })}
-
               </div>
             )}
-
           </div>
-
         </div>
       )}
 
@@ -3360,18 +3417,14 @@ function App() {
               setAdminOpen(false)
             }
           >
-
             <div
               className="login-modal admin-modal"
               onClick={(event) =>
                 event.stopPropagation()
               }
             >
-
               <AdminDashboard />
-
             </div>
-
           </div>
         )}
 
@@ -3387,18 +3440,14 @@ function App() {
               setInventoryOpen(false)
             }
           >
-
             <div
               className="login-modal inventory-modal"
               onClick={(event) =>
                 event.stopPropagation()
               }
             >
-
               <div className="modal-header">
-
                 <div>
-
                   <h2>
                     Inventory 📦
                   </h2>
@@ -3407,11 +3456,11 @@ function App() {
                     Manage stock and
                     low-stock thresholds
                   </p>
-
                 </div>
 
                 <button
                   className="close-btn"
+                  type="button"
                   onClick={() =>
                     setInventoryOpen(
                       false
@@ -3420,11 +3469,9 @@ function App() {
                 >
                   ×
                 </button>
-
               </div>
 
               <div className="inventory-header-actions">
-
                 <button
                   className="secondary-btn"
                   onClick={
@@ -3438,15 +3485,11 @@ function App() {
                     ? "Refreshing..."
                     : "↻ Refresh"}
                 </button>
-
               </div>
 
               <div className="inventory-grid">
-
                 {inventoryLoading ? (
-
                   <div className="inventory-loading">
-
                     <div className="empty-icon">
                       📦
                     </div>
@@ -3460,14 +3503,10 @@ function App() {
                       we fetch your
                       inventory.
                     </p>
-
                   </div>
-
                 ) : inventory.length ===
                   0 ? (
-
                   <div className="inventory-loading">
-
                     <div className="empty-icon">
                       📦
                     </div>
@@ -3489,18 +3528,13 @@ function App() {
                     >
                       Refresh Inventory
                     </button>
-
                   </div>
-
                 ) : (
-
                   inventory.map(
                     (item) => {
-
                       const stock =
                         Number(
-                          item.stock ||
-                            0
+                          item.stock || 0
                         );
 
                       const threshold =
@@ -3529,11 +3563,8 @@ function App() {
                               : ""
                           }`}
                         >
-
                           <div className="inventory-card-top">
-
                             <div>
-
                               <strong>
                                 {
                                   item.name
@@ -3547,7 +3578,6 @@ function App() {
                                   }
                                 </small>
                               )}
-
                             </div>
 
                             <span
@@ -3561,11 +3591,9 @@ function App() {
                               ●{" "}
                               {status}
                             </span>
-
                           </div>
 
                           <div className="inventory-stock-info">
-
                             <span>
                               Current Stock
                             </span>
@@ -3573,12 +3601,10 @@ function App() {
                             <strong>
                               {stock}
                             </strong>
-
                           </div>
 
                           {isLowStock && (
                             <div className="inventory-warning">
-
                               ⚠️ Low Stock
 
                               <span>
@@ -3587,25 +3613,24 @@ function App() {
                                   threshold
                                 }
                               </span>
-
                             </div>
                           )}
 
                           <div className="inventory-edit-group">
-
-                            <label>
+                            <label
+                              htmlFor={`stock-${item._id}`}
+                            >
                               Update Stock
                             </label>
 
                             <div className="inventory-edit-row">
-
                               <input
+                                id={`stock-${item._id}`}
                                 type="number"
                                 min="0"
                                 defaultValue={
                                   stock
                                 }
-                                id={`stock-${item._id}`}
                               />
 
                               <button
@@ -3618,19 +3643,16 @@ function App() {
 
                                   updateInventoryStock(
                                     item._id,
-                                    input.value
+                                    input?.value
                                   );
                                 }}
                               >
                                 Update
                               </button>
-
                             </div>
-
                           </div>
 
                           <div className="inventory-threshold-info">
-
                             <span>
                               Low-stock threshold
                             </span>
@@ -3640,24 +3662,23 @@ function App() {
                                 threshold
                               }
                             </strong>
-
                           </div>
 
                           <div className="inventory-edit-group">
-
-                            <label>
+                            <label
+                              htmlFor={`threshold-${item._id}`}
+                            >
                               Update Threshold
                             </label>
 
                             <div className="inventory-edit-row">
-
                               <input
+                                id={`threshold-${item._id}`}
                                 type="number"
                                 min="0"
                                 defaultValue={
                                   threshold
                                 }
-                                id={`threshold-${item._id}`}
                               />
 
                               <button
@@ -3670,28 +3691,21 @@ function App() {
 
                                   updateInventoryThreshold(
                                     item._id,
-                                    input.value
+                                    input?.value
                                   );
                                 }}
                               >
                                 Update
                               </button>
-
                             </div>
-
                           </div>
-
                         </div>
                       );
                     }
                   )
-
                 )}
-
               </div>
-
             </div>
-
           </div>
         )}
 
@@ -3700,11 +3714,8 @@ function App() {
       ===================================================== */}
 
       <footer className="footer">
-
         <div className="footer-content">
-
           <div>
-
             <div className="logo footer-logo">
               <span>P</span>
               Pizza
@@ -3717,17 +3728,14 @@ function App() {
               all in one delicious
               experience.
             </p>
-
           </div>
 
           <div>
-
             <h4>
               Quick Links
             </h4>
 
             <div className="footer-links">
-
               <a
                 href="#home"
                 onClick={(event) => {
@@ -3772,13 +3780,10 @@ function App() {
               >
                 About
               </a>
-
             </div>
-
           </div>
 
           <div>
-
             <h4>
               PizzaCraft
             </h4>
@@ -3788,22 +3793,16 @@ function App() {
               Served with happiness.
               🍕
             </p>
-
           </div>
-
         </div>
 
         <div className="footer-bottom">
-
           ©{" "}
           {new Date().getFullYear()}{" "}
           PizzaCraft. All rights
           reserved.
-
         </div>
-
       </footer>
-
     </div>
   );
 }
