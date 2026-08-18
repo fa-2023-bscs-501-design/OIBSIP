@@ -1,4 +1,6 @@
-import "./AdminDashboard.css";
+const API_URL =
+  "https://pizzacraft-delta.vercel.app";
+  import "./AdminDashboard.css";
 import { useEffect, useState } from "react";
 
 function AdminDashboard() {
@@ -23,7 +25,7 @@ function AdminDashboard() {
   const fetchOrders = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/orders/admin",
+        '${API_URL}/api/orders/admin',
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -60,7 +62,7 @@ function AdminDashboard() {
   const fetchInventory = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/inventory",
+        '${API_URL}/api/inventory',
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -118,7 +120,7 @@ function AdminDashboard() {
       setUpdatingId(orderId);
 
       const response = await fetch(
-        `http://localhost:5000/api/orders/admin/${orderId}/status`,
+        `${API_URL}/api/orders/admin/${orderId}/status`,
         {
           method: "PUT",
           headers: {
@@ -189,7 +191,7 @@ function AdminDashboard() {
       setUpdatingStockId(itemId);
 
       const response = await fetch(
-        `http://localhost:5000/api/inventory/${itemId}/stock`,
+        `${API_URL}/api/inventory/${itemId}/stock`,
         {
           method: "PUT",
           headers: {
@@ -262,7 +264,7 @@ function AdminDashboard() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/inventory/${itemId}/threshold`,
+        `${API_URL}/api/inventory/${itemId}/threshold`,
         {
           method: "PUT",
           headers: {
