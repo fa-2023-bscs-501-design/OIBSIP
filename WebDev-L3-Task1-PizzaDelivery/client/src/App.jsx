@@ -3,7 +3,7 @@ import "./App.css";
 import AdminDashboard from "./AdminDashboard";
 
 const API_URL =
-  "https://pizzacraft-obh2nxj21-fa-2023-bscs-501-designs-projects.vercel.app";
+  "https://pizzacraft-delta.vercel.app";
 
 /* =========================================================
    PIZZAS
