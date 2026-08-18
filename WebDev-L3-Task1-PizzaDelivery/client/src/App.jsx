@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import AdminDashboard from "./AdminDashboard";
 
-const API_URL = "http://localhost:5000";
+const API_URL =
+  "https://pizzacraft-obh2nxj21-fa-2023-bscs-501-designs-projects.vercel.app";
 
 /* =========================================================
    PIZZAS
