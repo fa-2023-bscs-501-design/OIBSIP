@@ -151,6 +151,28 @@ const toppingOptions = [
 ========================================================= */
 
 function App() {
+  /* =======================================================
+     RESET PASSWORD PAGE
+  ======================================================= */
+
+  const isResetPasswordPage =
+    window.location.pathname === "/reset-password";
+
+  const resetToken = new URLSearchParams(
+    window.location.search
+  ).get("token");
+
+  const [resetPassword, setResetPassword] = useState("");
+  const [confirmResetPassword, setConfirmResetPassword] =
+    useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
+
+  /* =======================================================
+     MAIN STATES
+  ======================================================= */
+
   const [activeCategory, setActiveCategory] =
     useState("All");
 
@@ -159,13 +181,6 @@ function App() {
 
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
-
-    const [resetPassword, setResetPassword] = useState("");
-const [confirmResetPassword, setConfirmResetPassword] = useState("");
-const [resetLoading, setResetLoading] = useState(false);
-const [resetMessage, setResetMessage] = useState("");
-const [resetError, setResetError] = useState("");
-
 
   /* =======================================================
      AUTH
@@ -180,17 +195,12 @@ const [resetError, setResetError] = useState("");
   const [isLoggedIn, setIsLoggedIn] =
     useState(() =>
       Boolean(
-        localStorage.getItem(
-          "pizzaCraftToken"
-        )
+        localStorage.getItem("pizzaCraftToken")
       )
     );
 
-  const [userName, setUserName] =
-    useState("");
-
-  const [userRole, setUserRole] =
-    useState("");
+  const [userName, setUserName] = useState("");
+  const [userRole, setUserRole] = useState("");
 
   const [loginEmail, setLoginEmail] =
     useState("");
@@ -210,14 +220,21 @@ const [resetError, setResetError] = useState("");
   const [authLoading, setAuthLoading] =
     useState(false);
 
-    const [resendEmail, setResendEmail] = useState("");
-const [resendLoading, setResendLoading] = useState(false);
-const [resendMessage, setResendMessage] = useState("");
-const [resendError, setResendError] = useState("");
-
   /* =======================================================
      EMAIL VERIFICATION
   ======================================================= */
+
+  const [resendEmail, setResendEmail] =
+    useState("");
+
+  const [resendLoading, setResendLoading] =
+    useState(false);
+
+  const [resendMessage, setResendMessage] =
+    useState("");
+
+  const [resendError, setResendError] =
+    useState("");
 
   const [
     emailVerificationStatus,
@@ -228,9 +245,6 @@ const [resendError, setResendError] = useState("");
     emailVerificationMessage,
     setEmailVerificationMessage,
   ] = useState("");
-
-  
-
 
   /* =======================================================
      BUILDER
@@ -274,9 +288,7 @@ const [resendError, setResendError] = useState("");
     try {
       return (
         JSON.parse(
-          localStorage.getItem(
-            "pizzaCraftOrders"
-          )
+          localStorage.getItem("pizzaCraftOrders")
         ) || []
       );
     } catch {
@@ -285,89 +297,210 @@ const [resendError, setResendError] = useState("");
   });
 
   /* =========================================================
+     RESET PASSWORD
+  ========================================================= */
+
+  const handleResetPassword = async (event) => {
+    event.preventDefault();
+
+    setResetMessage("");
+    setResetError("");
+
+    if (!resetToken) {
+      setResetError(
+        "Invalid or missing reset token."
+      );
+      return;
+    }
+
+    if (
+      !resetPassword ||
+      !confirmResetPassword
+    ) {
+      setResetError(
+        "Please fill both password fields."
+      );
+      return;
+    }
+
+    if (resetPassword.length < 6) {
+      setResetError(
+        "Password must be at least 6 characters long."
+      );
+      return;
+    }
+
+    if (
+      resetPassword !==
+      confirmResetPassword
+    ) {
+      setResetError(
+        "Passwords do not match."
+      );
+      return;
+    }
+
+    try {
+      setResetLoading(true);
+
+      const response = await fetch(
+        `${API_URL}/api/auth/reset-password/${encodeURIComponent(
+          resetToken
+        )}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            password: resetPassword,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Unable to reset password."
+        );
+      }
+
+      setResetMessage(
+        data.message ||
+          "Password reset successfully! You can now login."
+      );
+
+      setResetPassword("");
+      setConfirmResetPassword("");
+    } catch (error) {
+      console.error(
+        "Reset password error:",
+        error
+      );
+
+      setResetError(
+        error.message ||
+          "Unable to reset password."
+      );
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  /* =========================================================
      EMAIL VERIFICATION
   ========================================================= */
 
   useEffect(() => {
-  const path = window.location.pathname;
+    const path =
+      window.location.pathname;
 
-  if (path !== "/verify-email") {
-    return;
-  }
-
-  const params = new URLSearchParams(
-    window.location.search
-  );
-
-  const token = params.get("token");
-
-  if (!token) {
-    setEmailVerificationStatus("error");
-    setEmailVerificationMessage(
-      "Verification token is missing."
-    );
-    return;
-  }
-
-  const verifyUserEmail = async () => {
-    try {
-      setEmailVerificationStatus("loading");
-
-      const response = await fetch(
-        `${API_URL}/api/auth/verify-email?token=${encodeURIComponent(
-          token
-        )}`
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(
-          data.message ||
-            "Email verification failed."
-        );
-      }
-
-      setEmailVerificationStatus("success");
-
-      setEmailVerificationMessage(
-        data.message ||
-          "Email verified successfully. You can now login."
-      );
-    } catch (error) {
-      console.error(
-        "Email verification error:",
-        error
-      );
-
-      setEmailVerificationStatus("error");
-
-      setEmailVerificationMessage(
-        error.message ||
-          "Email verification failed."
-      );
+    if (path !== "/verify-email") {
+      return;
     }
-  };
 
-  verifyUserEmail();
-}, []);
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const token =
+      params.get("token");
+
+    if (!token) {
+      setEmailVerificationStatus(
+        "error"
+      );
+
+      setEmailVerificationMessage(
+        "Verification token is missing."
+      );
+
+      return;
+    }
+
+    const verifyUserEmail =
+      async () => {
+        try {
+          setEmailVerificationStatus(
+            "loading"
+          );
+
+          const response =
+            await fetch(
+              `${API_URL}/api/auth/verify-email?token=${encodeURIComponent(
+                token
+              )}`
+            );
+
+          const data =
+            await response.json();
+
+          if (
+            !response.ok ||
+            !data.success
+          ) {
+            throw new Error(
+              data.message ||
+                "Email verification failed."
+            );
+          }
+
+          setEmailVerificationStatus(
+            "success"
+          );
+
+          setEmailVerificationMessage(
+            data.message ||
+              "Email verified successfully. You can now login."
+          );
+        } catch (error) {
+          console.error(
+            "Email verification error:",
+            error
+          );
+
+          setEmailVerificationStatus(
+            "error"
+          );
+
+          setEmailVerificationMessage(
+            error.message ||
+              "Email verification failed."
+          );
+        }
+      };
+
+    verifyUserEmail();
+  }, []);
+
   /* =========================================================
      LOAD USER
   ========================================================= */
 
   useEffect(() => {
     try {
-      const savedUser = JSON.parse(
-        localStorage.getItem(
-          "pizzaCraftUser"
-        )
-      );
+      const savedUser =
+        JSON.parse(
+          localStorage.getItem(
+            "pizzaCraftUser"
+          )
+        );
 
       if (savedUser) {
         setUserName(
           savedUser.name ||
             savedUser.username ||
-            savedUser.email?.split("@")[0] ||
+            savedUser.email?.split(
+              "@"
+            )[0] ||
             ""
         );
 
@@ -390,7 +523,7 @@ const [resendError, setResendError] = useState("");
   }, []);
 
   /* =========================================================
-     REAL-TIME ORDER STATUS POLLING
+     REAL-TIME ORDER STATUS
   ========================================================= */
 
   useEffect(() => {
@@ -398,17 +531,17 @@ const [resendError, setResendError] = useState("");
       return;
     }
 
-    const interval = setInterval(() => {
-      loadMyOrders();
-    }, 5000);
+    const interval =
+      setInterval(() => {
+        loadMyOrders();
+      }, 5000);
 
-    return () => {
+    return () =>
       clearInterval(interval);
-    };
   }, [isLoggedIn]);
 
   /* =========================================================
-     LOAD MY ORDERS
+     LOAD ORDERS
   ========================================================= */
 
   const loadMyOrders = async () => {
@@ -422,17 +555,19 @@ const [resendError, setResendError] = useState("");
         return;
       }
 
-      const response = await fetch(
-        `${API_URL}/api/orders`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response =
+        await fetch(
+          `${API_URL}/api/orders`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (
         !response.ok ||
@@ -444,7 +579,9 @@ const [resendError, setResendError] = useState("");
         );
       }
 
-      setOrders(data.orders || []);
+      setOrders(
+        data.orders || []
+      );
     } catch (error) {
       console.error(
         "Load orders error:",
@@ -454,7 +591,7 @@ const [resendError, setResendError] = useState("");
   };
 
   /* =========================================================
-     LOAD INVENTORY
+     INVENTORY
   ========================================================= */
 
   const loadInventory = async () => {
@@ -471,17 +608,19 @@ const [resendError, setResendError] = useState("");
         return;
       }
 
-      const response = await fetch(
-        `${API_URL}/api/inventory`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response =
+        await fetch(
+          `${API_URL}/api/inventory`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (
         !response.ok ||
@@ -512,7 +651,7 @@ const [resendError, setResendError] = useState("");
   };
 
   /* =========================================================
-     UPDATE INVENTORY STOCK
+     UPDATE STOCK
   ========================================================= */
 
   const updateInventoryStock = async (
@@ -532,7 +671,8 @@ const [resendError, setResendError] = useState("");
         return;
       }
 
-      const stock = Number(newStock);
+      const stock =
+        Number(newStock);
 
       if (
         Number.isNaN(stock) ||
@@ -544,22 +684,24 @@ const [resendError, setResendError] = useState("");
         return;
       }
 
-      const response = await fetch(
-        `${API_URL}/api/inventory/${id}/stock`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type":
-              "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            stock,
-          }),
-        }
-      );
+      const response =
+        await fetch(
+          `${API_URL}/api/inventory/${id}/stock`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type":
+                "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              stock,
+            }),
+          }
+        );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (
         !response.ok ||
@@ -572,8 +714,8 @@ const [resendError, setResendError] = useState("");
       }
 
       setInventory(
-        (currentInventory) =>
-          currentInventory.map(
+        (current) =>
+          current.map(
             (item) =>
               item._id === id
                 ? data.item
@@ -598,11 +740,14 @@ const [resendError, setResendError] = useState("");
   };
 
   /* =========================================================
-     UPDATE LOW STOCK THRESHOLD
+     UPDATE THRESHOLD
   ========================================================= */
 
   const updateInventoryThreshold =
-    async (id, newThreshold) => {
+    async (
+      id,
+      newThreshold
+    ) => {
       try {
         const token =
           localStorage.getItem(
@@ -631,20 +776,21 @@ const [resendError, setResendError] = useState("");
           return;
         }
 
-        const response = await fetch(
-          `${API_URL}/api/inventory/${id}/threshold`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type":
-                "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              lowStockThreshold,
-            }),
-          }
-        );
+        const response =
+          await fetch(
+            `${API_URL}/api/inventory/${id}/threshold`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                lowStockThreshold,
+              }),
+            }
+          );
 
         const data =
           await response.json();
@@ -660,8 +806,8 @@ const [resendError, setResendError] = useState("");
         }
 
         setInventory(
-          (currentInventory) =>
-            currentInventory.map(
+          (current) =>
+            current.map(
               (item) =>
                 item._id === id
                   ? data.item
@@ -686,87 +832,94 @@ const [resendError, setResendError] = useState("");
     };
 
   /* =========================================================
-     FILTERED PIZZAS
+     FILTER PIZZAS
   ========================================================= */
 
-  const filteredPizzas = useMemo(() => {
-    if (
-      activeCategory === "All"
-    ) {
-      return pizzas;
-    }
+  const filteredPizzas =
+    useMemo(() => {
+      if (
+        activeCategory ===
+        "All"
+      ) {
+        return pizzas;
+      }
 
-    return pizzas.filter(
-      (pizza) =>
-        pizza.category ===
-        activeCategory
-    );
-  }, [activeCategory]);
+      return pizzas.filter(
+        (pizza) =>
+          pizza.category ===
+          activeCategory
+      );
+    }, [activeCategory]);
 
   /* =========================================================
      BUILDER PRICE
   ========================================================= */
 
-  const builderPrice = useMemo(() => {
-    const toppingsTotal =
-      toppings.reduce(
-        (total, toppingName) => {
-          const topping =
-            toppingOptions.find(
-              (item) =>
-                item.name ===
-                toppingName
+  const builderPrice =
+    useMemo(() => {
+      const toppingsTotal =
+        toppings.reduce(
+          (total, toppingName) => {
+            const topping =
+              toppingOptions.find(
+                (item) =>
+                  item.name ===
+                  toppingName
+              );
+
+            return (
+              total +
+              (topping?.price || 0)
             );
+          },
+          0
+        );
 
-          return (
-            total +
-            (topping?.price || 0)
-          );
-        },
-        0
+      return (
+        999 +
+        sizePrices[size] +
+        crustPrices[crust] +
+        saucePrices[sauce] +
+        cheesePrices[cheese] +
+        toppingsTotal
       );
-
-    return (
-      999 +
-      sizePrices[size] +
-      crustPrices[crust] +
-      saucePrices[sauce] +
-      cheesePrices[cheese] +
-      toppingsTotal
-    );
-  }, [
-    size,
-    crust,
-    sauce,
-    cheese,
-    toppings,
-  ]);
+    }, [
+      size,
+      crust,
+      sauce,
+      cheese,
+      toppings,
+    ]);
 
   /* =========================================================
      NAVIGATION
   ========================================================= */
 
-  const closeLargeSections = () => {
-    setAdminOpen(false);
-    setInventoryOpen(false);
-    setMyOrdersOpen(false);
-  };
+  const closeLargeSections =
+    () => {
+      setAdminOpen(false);
+      setInventoryOpen(false);
+      setMyOrdersOpen(false);
+    };
 
-  const scrollToSection = (id) => {
-    closeLargeSections();
+  const scrollToSection =
+    (id) => {
+      closeLargeSections();
 
-    setTimeout(() => {
-      const element =
-        document.getElementById(id);
+      setTimeout(() => {
+        const element =
+          document.getElementById(
+            id
+          );
 
-      if (element) {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
-    }, 50);
-  };
+        if (element) {
+          element.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      }, 50);
+    };
 
   const scrollToMenu = () => {
     setActiveCategory("All");
@@ -822,246 +975,240 @@ const [resendError, setResendError] = useState("");
      REGISTER
   ========================================================= */
 
-  const handleRegister = async (
-    event
-  ) => {
-    event.preventDefault();
+  const handleRegister =
+    async (event) => {
+      event.preventDefault();
 
-    if (
-      !registerName ||
-      !registerEmail ||
-      !registerPassword
-    ) {
-      alert(
-        "Please fill all fields."
-      );
-      return;
-    }
-
-    try {
-      setAuthLoading(true);
-
-      const response = await fetch(
-        `${API_URL}/api/auth/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            name: registerName,
-            email: registerEmail,
-            password:
-              registerPassword,
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Registration failed."
+      if (
+        !registerName ||
+        !registerEmail ||
+        !registerPassword
+      ) {
+        alert(
+          "Please fill all fields."
         );
+        return;
       }
 
-      alert(
-        "Registration successful! Please login."
-      );
+      try {
+        setAuthLoading(true);
 
-      setRegisterMode(false);
-      setLoginEmail(
-        registerEmail
-      );
+        const response =
+          await fetch(
+            `${API_URL}/api/auth/register`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                name: registerName,
+                email: registerEmail,
+                password:
+                  registerPassword,
+              }),
+            }
+          );
 
-      setRegisterName("");
-      setRegisterEmail("");
-      setRegisterPassword("");
-    } catch (error) {
-      alert(
-        error.message ||
-          "Registration failed."
-      );
-    } finally {
-      setAuthLoading(false);
-    }
-  };
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Registration failed."
+          );
+        }
+
+        alert(
+          "Registration successful! Please check your email for verification."
+        );
+
+        setRegisterMode(false);
+        setLoginEmail(
+          registerEmail
+        );
+
+        setRegisterName("");
+        setRegisterEmail("");
+        setRegisterPassword("");
+      } catch (error) {
+        alert(
+          error.message ||
+            "Registration failed."
+        );
+      } finally {
+        setAuthLoading(false);
+      }
+    };
 
   /* =========================================================
      LOGIN
   ========================================================= */
 
-  const handleLogin = async (
-    event
-  ) => {
-    event.preventDefault();
+  const handleLogin =
+    async (event) => {
+      event.preventDefault();
 
-    if (
-      !loginEmail ||
-      !loginPassword
-    ) {
-      alert(
-        "Please enter email and password."
-      );
-      return;
-    }
+      if (
+        !loginEmail ||
+        !loginPassword
+      ) {
+        alert(
+          "Please enter email and password."
+        );
+        return;
+      }
 
-    try {
-      setAuthLoading(true);
+      try {
+        setAuthLoading(true);
 
-      const response = await fetch(
-        `${API_URL}/api/auth/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            email: loginEmail,
-            password:
-              loginPassword,
-          }),
+        const response =
+          await fetch(
+            `${API_URL}/api/auth/login`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                email: loginEmail,
+                password:
+                  loginPassword,
+              }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Login failed."
+          );
         }
-      );
 
-      const data =
-        await response.json();
+        if (data.token) {
+          localStorage.setItem(
+            "pizzaCraftToken",
+            data.token
+          );
+        }
 
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
+        if (data.user) {
+          localStorage.setItem(
+            "pizzaCraftUser",
+            JSON.stringify(
+              data.user
+            )
+          );
+
+          setUserName(
+            data.user.name ||
+              data.user.username ||
+              data.user.email?.split(
+                "@"
+              )[0] ||
+              ""
+          );
+
+          setUserRole(
+            data.user.role || ""
+          );
+        }
+
+        setIsLoggedIn(true);
+
+        closeLogin();
+
+        await loadMyOrders();
+
+        alert(
+          "Login successful! Welcome to PizzaCraft 🍕"
+        );
+      } catch (error) {
+        alert(
+          error.message ||
             "Login failed."
         );
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+  /* =========================================================
+     RESEND VERIFICATION
+  ========================================================= */
+
+  const handleResendVerification =
+    async () => {
+      const email =
+        resendEmail.trim();
+
+      if (!email) {
+        setResendError(
+          "Please enter your email address."
+        );
+
+        setResendMessage("");
+        return;
       }
 
-      if (data.token) {
-        localStorage.setItem(
-          "pizzaCraftToken",
-          data.token
+      try {
+        setResendLoading(true);
+        setResendError("");
+        setResendMessage("");
+
+        const response =
+          await fetch(
+            `${API_URL}/api/auth/resend-verification`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                email,
+              }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.message ||
+              "Unable to resend verification email."
+          );
+        }
+
+        setResendMessage(
+          data.message ||
+            "Verification email sent successfully. Please check your inbox."
         );
+      } catch (error) {
+        console.error(
+          "Resend verification error:",
+          error
+        );
+
+        setResendError(
+          error.message ||
+            "Unable to resend verification email."
+        );
+      } finally {
+        setResendLoading(false);
       }
+    };
 
-      if (data.user) {
-        localStorage.setItem(
-          "pizzaCraftUser",
-          JSON.stringify(
-            data.user
-          )
-        );
-
-        setUserName(
-          data.user.name ||
-            data.user.username ||
-            data.user.email?.split(
-              "@"
-            )[0] ||
-            ""
-        );
-
-        setUserRole(
-          data.user.role || ""
-        );
-      } else {
-        const fallbackUser = {
-          name:
-            loginEmail.split(
-              "@"
-            )[0],
-          email: loginEmail,
-          role: "",
-        };
-
-        localStorage.setItem(
-          "pizzaCraftUser",
-          JSON.stringify(
-            fallbackUser
-          )
-        );
-
-        setUserName(
-          fallbackUser.name
-        );
-
-        setUserRole("");
-      }
-
-      setIsLoggedIn(true);
-
-      closeLogin();
-
-      await loadMyOrders();
-
-      alert(
-        "Login successful! Welcome to PizzaCraft 🍕"
-      );
-    } catch (error) {
-      alert(
-        error.message ||
-          "Login failed."
-      );
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-  const email = resendEmail.trim();
-
-  if (!email) {
-    setResendError("Please enter your email address.");
-    setResendMessage("");
-    return;
-  }
-
-  try {
-    setResendLoading(true);
-    setResendError("");
-    setResendMessage("");
-
-    const response = await fetch(
-      `${API_URL}/api/auth/resend-verification`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data.success) {
-      throw new Error(
-        data.message ||
-          "Unable to resend verification email."
-      );
-    }
-
-    setResendMessage(
-      data.message ||
-        "Verification email sent successfully. Please check your inbox."
-    );
-  } catch (error) {
-    console.error(
-      "Resend verification error:",
-      error
-    );
-
-    setResendError(
-      error.message ||
-        "Unable to resend verification email."
-    );
-  } finally {
-    setResendLoading(false);
-  }
-};
   /* =========================================================
      FORGOT PASSWORD
   ========================================================= */
@@ -1094,7 +1241,10 @@ const [resendError, setResendError] = useState("");
         const data =
           await response.json();
 
-        if (!response.ok) {
+        if (
+          !response.ok ||
+          !data.success
+        ) {
           throw new Error(
             data.message ||
               "Unable to send reset email."
@@ -1359,10 +1509,6 @@ const [resendError, setResendError] = useState("");
           return;
         }
 
-        /* ===============================
-           STEP 1: CREATE PAYMENT
-        =============================== */
-
         const paymentResponse =
           await fetch(
             `${API_URL}/api/payment/create-order`,
@@ -1395,10 +1541,6 @@ const [resendError, setResendError] = useState("");
           );
         }
 
-        /* ===============================
-           STEP 2: DEMO PAYMENT
-        =============================== */
-
         const confirmPayment =
           window.confirm(
             `Demo Payment\n\nAmount: Rs. ${cartTotal}\n\nClick OK to complete the demo payment.`
@@ -1411,17 +1553,9 @@ const [resendError, setResendError] = useState("");
           return;
         }
 
-        /* ===============================
-           STEP 3: PAYMENT SUCCESS
-        =============================== */
-
         alert(
           `Payment successful! ✅\n\nPayment ID: ${paymentData.order.id}`
         );
-
-        /* ===============================
-           STEP 4: ORDER ITEMS
-        =============================== */
 
         const orderItems =
           cart.map((item) => ({
@@ -1441,10 +1575,6 @@ const [resendError, setResendError] = useState("");
               item.customization ||
               {},
           }));
-
-        /* ===============================
-           STEP 5: CREATE ORDER
-        =============================== */
 
         const orderResponse =
           await fetch(
@@ -1483,10 +1613,6 @@ const [resendError, setResendError] = useState("");
           );
         }
 
-        /* ===============================
-           STEP 6: UPDATE ORDERS
-        =============================== */
-
         setOrders(
           (currentOrders) => [
             orderData.order,
@@ -1494,26 +1620,14 @@ const [resendError, setResendError] = useState("");
           ]
         );
 
-        /* ===============================
-           STEP 7: CLEAR CART
-        =============================== */
-
         setCart([]);
         setCartOpen(false);
-
-        /* ===============================
-           STEP 8: SUCCESS
-        =============================== */
 
         alert(
           `Order placed successfully! 🍕\n\nOrder ID: ${String(
             orderData.order._id
           ).slice(-8)}`
         );
-
-        /* ===============================
-           STEP 9: MY ORDERS
-        =============================== */
 
         setMyOrdersOpen(true);
       } catch (error) {
@@ -1554,154 +1668,287 @@ const [resendError, setResendError] = useState("");
   };
 
   /* =========================================================
+     RESET PASSWORD PAGE
+     
+     IMPORTANT:
+     Ye return MAIN return se pehle hona chahiye.
+  ========================================================= */
+
+  if (isResetPasswordPage) {
+    return (
+      <div className="auth-page">
+        <div className="auth-card">
+
+          <div className="reset-password-logo">
+            🍕
+          </div>
+
+          <h2>
+            Reset Password 🔐
+          </h2>
+
+          <p>
+            Create a new password for
+            your PizzaCraft account.
+          </p>
+
+          <form
+            onSubmit={
+              handleResetPassword
+            }
+          >
+
+            <input
+              type="password"
+              placeholder="New Password"
+              value={
+                resetPassword
+              }
+              onChange={(event) =>
+                setResetPassword(
+                  event.target.value
+                )
+              }
+            />
+
+            <input
+              type="password"
+              placeholder="Confirm New Password"
+              value={
+                confirmResetPassword
+              }
+              onChange={(event) =>
+                setConfirmResetPassword(
+                  event.target.value
+                )
+              }
+            />
+
+            {resetError && (
+              <p className="error-message">
+                {resetError}
+              </p>
+            )}
+
+            {resetMessage && (
+              <p className="success-message">
+                {resetMessage}
+              </p>
+            )}
+
+            <button
+              className="primary-btn"
+              type="submit"
+              disabled={
+                resetLoading
+              }
+            >
+              {resetLoading
+                ? "Resetting..."
+                : "Reset Password"}
+            </button>
+
+          </form>
+
+          {resetMessage && (
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={() => {
+                window.history.pushState(
+                  {},
+                  "",
+                  "/"
+                );
+
+                window.location.reload();
+              }}
+            >
+              Back to Login
+            </button>
+          )}
+
+        </div>
+      </div>
+    );
+  }
+
+  /* =========================================================
+     EMAIL VERIFICATION PAGE
+  ========================================================= */
+
+  if (
+    window.location.pathname ===
+    "/verify-email"
+  ) {
+    return (
+      <section className="about-section email-verification-page">
+
+        <div className="about-content">
+
+          <div className="hero-badge">
+            PIZZACRAFT • EMAIL VERIFICATION
+          </div>
+
+          {emailVerificationStatus ===
+            "loading" && (
+            <>
+              <div className="empty-icon">
+                📧
+              </div>
+
+              <h2>
+                Verifying your email...
+              </h2>
+
+              <p>
+                Please wait while we
+                securely verify your
+                PizzaCraft account.
+              </p>
+            </>
+          )}
+
+          {emailVerificationStatus ===
+            "success" && (
+            <>
+              <div className="empty-icon">
+                🎉
+              </div>
+
+              <h2>
+                Email Verified Successfully!
+              </h2>
+
+              <p>
+                {
+                  emailVerificationMessage
+                }
+              </p>
+
+              <button
+                className="primary-btn"
+                onClick={() => {
+                  window.history.pushState(
+                    {},
+                    "",
+                    "/"
+                  );
+
+                  window.location.reload();
+                }}
+              >
+                Login to PizzaCraft →
+              </button>
+            </>
+          )}
+
+          {emailVerificationStatus ===
+            "error" && (
+            <>
+              <div className="empty-icon">
+                ⚠️
+              </div>
+
+              <h2>
+                Verification Failed
+              </h2>
+
+              <p>
+                {
+                  emailVerificationMessage
+                }
+              </p>
+
+              <div className="resend-verification-box">
+
+                <h3>
+                  Didn't receive a valid email?
+                </h3>
+
+                <p>
+                  Enter your registered
+                  email address and we'll
+                  send you a new
+                  verification link.
+                </p>
+
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={
+                    resendEmail
+                  }
+                  onChange={(event) => {
+                    setResendEmail(
+                      event.target.value
+                    );
+                    setResendError("");
+                    setResendMessage("");
+                  }}
+                />
+
+                {resendError && (
+                  <div className="reset-error">
+                    {resendError}
+                  </div>
+                )}
+
+                {resendMessage && (
+                  <div className="reset-success">
+                    {resendMessage}
+                  </div>
+                )}
+
+                <button
+                  className="primary-btn"
+                  type="button"
+                  onClick={
+                    handleResendVerification
+                  }
+                  disabled={
+                    resendLoading
+                  }
+                >
+                  {resendLoading
+                    ? "Sending..."
+                    : "📧 Resend Verification Email"}
+                </button>
+
+              </div>
+
+              <button
+                className="secondary-btn"
+                onClick={() => {
+                  window.history.pushState(
+                    {},
+                    "",
+                    "/"
+                  );
+
+                  window.location.reload();
+                }}
+              >
+                Back to PizzaCraft
+              </button>
+            </>
+          )}
+
+        </div>
+
+      </section>
+    );
+  }
+
+  /* =========================================================
      USER ORDERS
   ========================================================= */
 
   const userOrders = orders;
 
   /* =========================================================
-     RENDER
+     MAIN RETURN
   ========================================================= */
-
-
-  const isResetPasswordPage =
-  window.location.pathname === "/reset-password";
-
-const resetToken =
-  new URLSearchParams(window.location.search).get("token");
-
-const handleResetPassword = async (e) => {
-  e.preventDefault();
-
-  setResetMessage("");
-  setResetError("");
-
-  if (!resetToken) {
-    setResetError("Invalid or missing reset token.");
-    return;
-  }
-
-  if (!resetPassword || !confirmResetPassword) {
-    setResetError("Please fill both password fields.");
-    return;
-  }
-
-  if (resetPassword.length < 6) {
-    setResetError(
-      "Password must be at least 6 characters long."
-    );
-    return;
-  }
-
-  if (resetPassword !== confirmResetPassword) {
-    setResetError("Passwords do not match.");
-    return;
-  }
-
-  try {
-    setResetLoading(true);
-
-    const response = await fetch(
-      `${API_URL}/api/auth/reset-password/${resetToken}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          password: resetPassword,
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || "Unable to reset password."
-      );
-    }
-
-    setResetMessage(
-      "Password reset successfully! You can now login."
-    );
-
-    setResetPassword("");
-    setConfirmResetPassword("");
-
-  } catch (error) {
-    console.error("Reset password error:", error);
-
-    setResetError(
-      error.message || "Unable to reset password."
-    );
-  } finally {
-    setResetLoading(false);
-  }
-};
-
-if (isResetPasswordPage) {
-  return (
-    <div className="reset-password-page">
-      <div className="reset-password-card">
-
-        <div className="reset-password-logo">
-          🍕
-        </div>
-
-        <h1>Reset Password</h1>
-
-        <p>
-          Create a new password for your PizzaCraft account.
-        </p>
-
-        <form onSubmit={handleResetPassword}>
-
-          <input
-            type="password"
-            placeholder="New password"
-            value={resetPassword}
-            onChange={(e) =>
-              setResetPassword(e.target.value)
-            }
-          />
-
-          <input
-            type="password"
-            placeholder="Confirm new password"
-            value={confirmResetPassword}
-            onChange={(e) =>
-              setConfirmResetPassword(e.target.value)
-            }
-          />
-
-          {resetError && (
-            <div className="reset-error">
-              {resetError}
-            </div>
-          )}
-
-          {resetMessage && (
-            <div className="reset-success">
-              {resetMessage}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={resetLoading}
-          >
-            {resetLoading
-              ? "Resetting..."
-              : "Reset Password"}
-          </button>
-
-        </form>
-
-      </div>
-    </div>
-  );
-}
 
   return (
     <div className="app">
@@ -1715,9 +1962,7 @@ if (isResetPasswordPage) {
         <button
           className="logo"
           onClick={() =>
-            scrollToSection(
-              "home"
-            )
+            scrollToSection("home")
           }
         >
           <span>P</span>
@@ -1729,9 +1974,7 @@ if (isResetPasswordPage) {
 
           <button
             onClick={() =>
-              scrollToSection(
-                "home"
-              )
+              scrollToSection("home")
             }
           >
             Home
@@ -1751,9 +1994,7 @@ if (isResetPasswordPage) {
 
           <button
             onClick={() =>
-              scrollToSection(
-                "about"
-              )
+              scrollToSection("about")
             }
           >
             About
@@ -1785,9 +2026,7 @@ if (isResetPasswordPage) {
               <button
                 className="nav-user-btn"
                 onClick={() =>
-                  setMyOrdersOpen(
-                    true
-                  )
+                  setMyOrdersOpen(true)
                 }
               >
                 👤{" "}
@@ -1799,9 +2038,7 @@ if (isResetPasswordPage) {
                 className="nav-orders-btn"
                 onClick={() => {
                   loadMyOrders();
-                  setMyOrdersOpen(
-                    true
-                  );
+                  setMyOrdersOpen(true);
                 }}
               >
                 📦 My Orders
@@ -1814,9 +2051,7 @@ if (isResetPasswordPage) {
                   <button
                     className="nav-admin-btn"
                     onClick={() =>
-                      setAdminOpen(
-                        true
-                      )
+                      setAdminOpen(true)
                     }
                   >
                     👑 Admin Orders
@@ -1842,7 +2077,6 @@ if (isResetPasswordPage) {
                 onClick={openCart}
               >
                 🛒
-
                 <span className="cart-count">
                   {cartItemsCount}
                 </span>
@@ -1861,153 +2095,8 @@ if (isResetPasswordPage) {
           )}
 
         </div>
+
       </nav>
-
-      {/* =====================================================
-          EMAIL VERIFICATION MESSAGE
-      ===================================================== */}
-
-     {/* =====================================================
-    EMAIL VERIFICATION PAGE
-===================================================== */}
-
-{window.location.pathname === "/verify-email" && (
-  <section className="about-section email-verification-page">
-    <div className="about-content">
-
-      <div className="hero-badge">
-        PIZZACRAFT • EMAIL VERIFICATION
-      </div>
-
-      {emailVerificationStatus === "loading" && (
-        <>
-          <div className="empty-icon">
-            📧
-          </div>
-
-          <h2>
-            Verifying your email...
-          </h2>
-
-          <p>
-            Please wait while we securely verify
-            your PizzaCraft account.
-          </p>
-        </>
-      )}
-
-      {emailVerificationStatus === "success" && (
-        <>
-          <div className="empty-icon">
-            🎉
-          </div>
-
-          <h2>
-            Email Verified Successfully!
-          </h2>
-
-          <p>
-            {emailVerificationMessage}
-          </p>
-
-          <button
-            className="primary-btn"
-            onClick={() => {
-              window.history.pushState(
-                {},
-                "",
-                "/"
-              );
-
-              openLogin();
-            }}
-          >
-            Login to PizzaCraft →
-          </button>
-        </>
-      )}
-
-      {emailVerificationStatus === "error" && (
-  <>
-    <div className="empty-icon">
-      ⚠️
-    </div>
-
-    <h2>
-      Verification Failed
-    </h2>
-
-    <p>
-      {emailVerificationMessage}
-    </p>
-
-    <div className="resend-verification-box">
-
-      <h3>
-        Didn't receive a valid email?
-      </h3>
-
-      <p>
-        Enter your registered email address
-        and we'll send you a new verification link.
-      </p>
-
-      <input
-        type="email"
-        placeholder="Enter your email address"
-        value={resendEmail}
-        onChange={(e) => {
-          setResendEmail(e.target.value);
-          setResendError("");
-          setResendMessage("");
-        }}
-      />
-
-      {resendError && (
-        <div className="reset-error">
-          {resendError}
-        </div>
-      )}
-
-      {resendMessage && (
-        <div className="reset-success">
-          {resendMessage}
-        </div>
-      )}
-
-      <button
-        className="primary-btn"
-        type="button"
-        onClick={handleResendVerification}
-        disabled={resendLoading}
-      >
-        {resendLoading
-          ? "Sending..."
-          : "📧 Resend Verification Email"}
-      </button>
-
-    </div>
-
-    <button
-      className="secondary-btn"
-      onClick={() => {
-        window.history.pushState(
-          {},
-          "",
-          "/"
-        );
-
-        window.location.reload();
-      }}
-    >
-      Back to PizzaCraft
-    </button>
-  </>
-)}
-
-    </div>
-  </section>
-)}
 
       {/* =====================================================
           HERO
@@ -2307,8 +2396,6 @@ if (isResetPasswordPage) {
 
           </div>
 
-          {/* SIZE */}
-
           <div className="builder-group">
 
             <h3>
@@ -2331,31 +2418,22 @@ if (isResetPasswordPage) {
                     setSize(item)
                   }
                 >
-
                   <strong>
                     {item}
                   </strong>
 
                   <span>
-                    {sizePrices[
-                      item
-                    ] === 0
+                    {sizePrices[item] ===
+                    0
                       ? "Base price"
-                      : `+ Rs. ${
-                          sizePrices[
-                            item
-                          ]
-                        }`}
+                      : `+ Rs. ${sizePrices[item]}`}
                   </span>
-
                 </button>
               ))}
 
             </div>
 
           </div>
-
-          {/* CRUST */}
 
           <div className="builder-group">
 
@@ -2379,31 +2457,22 @@ if (isResetPasswordPage) {
                     setCrust(item)
                   }
                 >
-
                   <strong>
                     {item}
                   </strong>
 
                   <span>
-                    {crustPrices[
-                      item
-                    ] === 0
+                    {crustPrices[item] ===
+                    0
                       ? "Included"
-                      : `+ Rs. ${
-                          crustPrices[
-                            item
-                          ]
-                        }`}
+                      : `+ Rs. ${crustPrices[item]}`}
                   </span>
-
                 </button>
               ))}
 
             </div>
 
           </div>
-
-          {/* SAUCE */}
 
           <div className="builder-group">
 
@@ -2427,31 +2496,22 @@ if (isResetPasswordPage) {
                     setSauce(item)
                   }
                 >
-
                   <strong>
                     {item}
                   </strong>
 
                   <span>
-                    {saucePrices[
-                      item
-                    ] === 0
+                    {saucePrices[item] ===
+                    0
                       ? "Included"
-                      : `+ Rs. ${
-                          saucePrices[
-                            item
-                          ]
-                        }`}
+                      : `+ Rs. ${saucePrices[item]}`}
                   </span>
-
                 </button>
               ))}
 
             </div>
 
           </div>
-
-          {/* CHEESE */}
 
           <div className="builder-group">
 
@@ -2475,31 +2535,22 @@ if (isResetPasswordPage) {
                     setCheese(item)
                   }
                 >
-
                   <strong>
                     {item}
                   </strong>
 
                   <span>
-                    {cheesePrices[
-                      item
-                    ] === 0
+                    {cheesePrices[item] ===
+                    0
                       ? "Included"
-                      : `+ Rs. ${
-                          cheesePrices[
-                            item
-                          ]
-                        }`}
+                      : `+ Rs. ${cheesePrices[item]}`}
                   </span>
-
                 </button>
               ))}
 
             </div>
 
           </div>
-
-          {/* TOPPINGS */}
 
           <div className="builder-group">
 
@@ -2555,8 +2606,6 @@ if (isResetPasswordPage) {
             </div>
 
           </div>
-
-          {/* SUMMARY */}
 
           <div className="builder-group builder-summary">
 
@@ -2872,10 +2921,6 @@ if (isResetPasswordPage) {
 
             </div>
 
-            {/* =================================================
-                REGISTER
-            ================================================= */}
-
             {registerMode ? (
 
               <form
@@ -2890,12 +2935,9 @@ if (isResetPasswordPage) {
                   value={
                     registerName
                   }
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(event) =>
                     setRegisterName(
-                      event.target
-                        .value
+                      event.target.value
                     )
                   }
                 />
@@ -2906,12 +2948,9 @@ if (isResetPasswordPage) {
                   value={
                     registerEmail
                   }
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(event) =>
                     setRegisterEmail(
-                      event.target
-                        .value
+                      event.target.value
                     )
                   }
                 />
@@ -2922,12 +2961,9 @@ if (isResetPasswordPage) {
                   value={
                     registerPassword
                   }
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(event) =>
                     setRegisterPassword(
-                      event.target
-                        .value
+                      event.target.value
                     )
                   }
                 />
@@ -2981,10 +3017,6 @@ if (isResetPasswordPage) {
 
             ) : (
 
-              /* =================================================
-                 LOGIN
-              ================================================= */
-
               <form
                 onSubmit={
                   handleLogin
@@ -2997,12 +3029,9 @@ if (isResetPasswordPage) {
                   value={
                     loginEmail
                   }
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(event) =>
                     setLoginEmail(
-                      event.target
-                        .value
+                      event.target.value
                     )
                   }
                 />
@@ -3013,19 +3042,12 @@ if (isResetPasswordPage) {
                   value={
                     loginPassword
                   }
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(event) =>
                     setLoginPassword(
-                      event.target
-                        .value
+                      event.target.value
                     )
                   }
                 />
-
-                {/* =================================================
-                    FORGOT PASSWORD
-                ================================================= */}
 
                 <button
                   type="button"
@@ -3071,6 +3093,7 @@ if (isResetPasswordPage) {
                 </p>
 
               </form>
+
             )}
 
           </div>
@@ -3325,7 +3348,7 @@ if (isResetPasswordPage) {
       )}
 
       {/* =====================================================
-          ADMIN ORDERS
+          ADMIN
       ===================================================== */}
 
       {adminOpen &&
@@ -3587,7 +3610,6 @@ if (isResetPasswordPage) {
                               <button
                                 className="primary-btn inventory-update-btn"
                                 onClick={() => {
-
                                   const input =
                                     document.getElementById(
                                       `stock-${item._id}`
@@ -3597,7 +3619,6 @@ if (isResetPasswordPage) {
                                     item._id,
                                     input.value
                                   );
-
                                 }}
                               >
                                 Update
@@ -3641,7 +3662,6 @@ if (isResetPasswordPage) {
                               <button
                                 className="secondary-btn inventory-update-btn"
                                 onClick={() => {
-
                                   const input =
                                     document.getElementById(
                                       `threshold-${item._id}`
@@ -3651,7 +3671,6 @@ if (isResetPasswordPage) {
                                     item._id,
                                     input.value
                                   );
-
                                 }}
                               >
                                 Update
@@ -3686,11 +3705,9 @@ if (isResetPasswordPage) {
           <div>
 
             <div className="logo footer-logo">
-
               <span>P</span>
               Pizza
               <span>Craft</span>
-
             </div>
 
             <p>
