@@ -90,6 +90,11 @@ const categories = [
    BUILDER OPTIONS
 ========================================================= */
 
+const sizePrices = {
+  Small: 0,
+  Medium: 200,
+  Large: 400,
+};
 const basePrices = {
   "Classic Base": 0,
   "Thin Crust Base": 100,
@@ -2476,12 +2481,13 @@ const [toppings, setToppings] =
 
             <div>
               <span>02</span>
-              <strong>
-                Pick Your Crust
-              </strong>
-              <small>
-                Classic, thin or cheese burst.
-              </small>
+            <strong>
+  Choose Pizza Base
+</strong>
+
+<small>
+  Classic, thin, cheese burst and more.
+</small>
             </div>
 
             <div>
@@ -2927,20 +2933,11 @@ const [toppings, setToppings] =
                         </p>
 
                         {item.customization && (
-                          <small>
-                            {
-                              item
-                                .customization
-                                .size
-                            }{" "}
-                            •{" "}
-                            {
-                              item
-                                .customization
-                                .crust
-                            }
-                          </small>
-                        )}
+  <small>
+    {item.customization.size} •{" "}
+    {item.customization.base}
+  </small>
+)}
                       </div>
 
                       <div className="quantity-controls">
