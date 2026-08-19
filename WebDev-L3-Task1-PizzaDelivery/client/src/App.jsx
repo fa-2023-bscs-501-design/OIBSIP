@@ -90,29 +90,38 @@ const categories = [
    BUILDER OPTIONS
 ========================================================= */
 
-const sizePrices = {
-  Small: 0,
-  Medium: 200,
-  Large: 400,
-};
-
-const crustPrices = {
-  "Classic Crust": 0,
-  "Cheese Burst": 250,
-  "Thin Crust": 100,
+const basePrices = {
+  "Classic Base": 0,
+  "Thin Crust Base": 100,
+  "Cheese Burst Base": 250,
+  "Whole Wheat Base": 150,
+  "Stuffed Crust Base": 300,
 };
 
 const saucePrices = {
   "Tomato Sauce": 0,
   "BBQ Sauce": 100,
   "Creamy Garlic": 150,
+  "Peri Peri Sauce": 120,
+  "Pesto Sauce": 180,
 };
 
 const cheesePrices = {
   Mozzarella: 0,
   "Extra Cheese": 180,
   "Cheddar Blend": 220,
+  "Cheese Mix": 250,
 };
+
+const vegetableOptions = [
+  { name: "Mushrooms", price: 100, emoji: "🍄" },
+  { name: "Olives", price: 80, emoji: "🫒" },
+  { name: "Jalapeños", price: 80, emoji: "🌶️" },
+  { name: "Onions", price: 60, emoji: "🧅" },
+  { name: "Bell Peppers", price: 90, emoji: "🫑" },
+  { name: "Tomatoes", price: 70, emoji: "🍅" },
+  { name: "Sweet Corn", price: 80, emoji: "🌽" },
+];
 
 const toppingOptions = [
   {
@@ -124,26 +133,6 @@ const toppingOptions = [
     name: "Chicken",
     price: 180,
     emoji: "🍗",
-  },
-  {
-    name: "Mushrooms",
-    price: 100,
-    emoji: "🍄",
-  },
-  {
-    name: "Olives",
-    price: 80,
-    emoji: "🫒",
-  },
-  {
-    name: "Jalapeños",
-    price: 80,
-    emoji: "🌶️",
-  },
-  {
-    name: "Onions",
-    price: 60,
-    emoji: "🧅",
   },
 ];
 
@@ -299,8 +288,6 @@ function App() {
   const [size, setSize] =
     useState("Medium");
 
-  const [crust, setCrust] =
-    useState("Classic Crust");
 
   const [sauce, setSauce] =
     useState("Tomato Sauce");
@@ -308,8 +295,14 @@ function App() {
   const [cheese, setCheese] =
     useState("Mozzarella");
 
-  const [toppings, setToppings] =
-    useState([]);
+ const [base, setBase] =
+  useState("Classic Base");
+
+const [vegetables, setVegetables] =
+  useState([]);
+
+const [toppings, setToppings] =
+  useState([]);
 
   /* =======================================================
      ORDERS / ADMIN / INVENTORY
@@ -947,42 +940,46 @@ function App() {
      BUILDER PRICE
   ========================================================= */
 
-  const builderPrice =
-    useMemo(() => {
-      const toppingsTotal =
-        toppings.reduce(
-          (total, toppingName) => {
-            const topping =
-              toppingOptions.find(
-                (item) =>
-                  item.name ===
-                  toppingName
-              );
-
-            return (
-              total +
-              (topping?.price || 0)
-            );
-          },
-          0
-        );
-
-      return (
-        999 +
-        sizePrices[size] +
-        crustPrices[crust] +
-        saucePrices[sauce] +
-        cheesePrices[cheese] +
-        toppingsTotal
+  const builderPrice = useMemo(() => {
+  const vegetableTotal = vegetables.reduce(
+    (total, vegetableName) => {
+      const vegetable = vegetableOptions.find(
+        (item) => item.name === vegetableName
       );
-    }, [
-      size,
-      crust,
-      sauce,
-      cheese,
-      toppings,
-    ]);
 
+      return total + (vegetable?.price || 0);
+    },
+    0
+  );
+
+  const toppingsTotal = toppings.reduce(
+    (total, toppingName) => {
+      const topping = toppingOptions.find(
+        (item) => item.name === toppingName
+      );
+
+      return total + (topping?.price || 0);
+    },
+    0
+  );
+
+  return (
+    999 +
+    sizePrices[size] +
+    basePrices[base] +
+    saucePrices[sauce] +
+    cheesePrices[cheese] +
+    vegetableTotal +
+    toppingsTotal
+  );
+}, [
+  size,
+  base,
+  sauce,
+  cheese,
+  vegetables,
+  toppings,
+]);
   /* =========================================================
      NAVIGATION
   ========================================================= */
@@ -1227,6 +1224,7 @@ function App() {
             data.token
           );
         }
+        
 
         if (data.user) {
           localStorage.setItem(
@@ -1520,12 +1518,13 @@ function App() {
         emoji: "🍕",
         quantity: 1,
         customization: {
-          size,
-          crust,
-          sauce,
-          cheese,
-          toppings,
-        },
+  size,
+  base,
+  sauce,
+  cheese,
+  vegetables,
+  toppings,
+},
       };
 
       setCart(
@@ -2448,7 +2447,7 @@ function App() {
             </h2>
 
             <p>
-              Choose your size, crust,
+              Choose Pizza Base,
               sauce, cheese and favourite
               toppings. Your pizza, exactly
               the way you want it.
@@ -2567,43 +2566,32 @@ function App() {
             </div>
           </div>
 
-          {/* CRUST */}
+          {/* PIZZA BASE */}
 
-          <div className="builder-group">
-            <h3>
-              Choose Crust
-            </h3>
+<div className="builder-group">
+  <h3>Choose Pizza Base</h3>
 
-            <div className="builder-options">
-              {Object.keys(
-                crustPrices
-              ).map((item) => (
-                <button
-                  type="button"
-                  key={item}
-                  className={`builder-option ${
-                    crust === item
-                      ? "selected"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setCrust(item)
-                  }
-                >
-                  <strong>
-                    {item}
-                  </strong>
+  <div className="builder-options">
+    {Object.keys(basePrices).map((item) => (
+      <button
+        type="button"
+        key={item}
+        className={`builder-option ${
+          base === item ? "selected" : ""
+        }`}
+        onClick={() => setBase(item)}
+      >
+        <strong>{item}</strong>
 
-                  <span>
-                    {crustPrices[item] ===
-                    0
-                      ? "Included"
-                      : `+ Rs. ${crustPrices[item]}`}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+        <span>
+          {basePrices[item] === 0
+            ? "Included"
+            : `+ Rs. ${basePrices[item]}`}
+        </span>
+      </button>
+    ))}
+  </div>
+</div>
 
           {/* SAUCE */}
 
@@ -2681,6 +2669,49 @@ function App() {
             </div>
           </div>
 
+          {/* VEGETABLES */}
+
+<div className="builder-group">
+  <h3>
+    Choose Vegetables
+    <span className="multi-select-label">
+      {" "}
+      • Multiple Select
+    </span>
+  </h3>
+
+  <div className="builder-options">
+    {vegetableOptions.map((vegetable) => (
+      <button
+        type="button"
+        key={vegetable.name}
+        className={`builder-option ${
+          vegetables.includes(vegetable.name)
+            ? "selected"
+            : ""
+        }`}
+        onClick={() => {
+          setVegetables((current) =>
+            current.includes(vegetable.name)
+              ? current.filter(
+                  (item) => item !== vegetable.name
+                )
+              : [...current, vegetable.name]
+          );
+        }}
+      >
+        <span>{vegetable.emoji}</span>
+
+        <strong>{vegetable.name}</strong>
+
+        <span>
+          + Rs. {vegetable.price}
+        </span>
+      </button>
+    ))}
+  </div>
+</div>
+
           {/* TOPPINGS */}
 
           <div className="builder-group">
@@ -2742,20 +2773,18 @@ function App() {
               </div>
 
               <h3>
-                {size}{" "}
-                {crust} Pizza
-              </h3>
+  {size} {base}
+</h3>
 
-              <p>
-                {sauce} •{" "}
-                {cheese}
+<p>
+  {sauce} • {cheese}
 
-                {toppings.length >
-                  0 &&
-                  ` • ${toppings.join(
-                    ", "
-                  )}`}
-              </p>
+  {vegetables.length > 0 &&
+    ` • ${vegetables.join(", ")}`}
+
+  {toppings.length > 0 &&
+    ` • ${toppings.join(", ")}`}
+</p>
             </div>
 
             <div className="builder-total">
