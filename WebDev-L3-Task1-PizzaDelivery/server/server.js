@@ -1,3 +1,4 @@
+const { startLowStockJob } = require("./jobs/lowStockJob");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -162,18 +163,25 @@ module.exports = app;
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`🍕 PizzaCraft server running on port ${PORT}`);
 
-    connectMongoDB()
-      .then(() => {
-        console.log("✅ Local MongoDB connection ready");
-      })
-      .catch((error) => {
-        console.error(
-          "❌ Local MongoDB connection failed:",
-          error.message
-        );
-      });
+    try {
+      await connectMongoDB();
+
+      console.log("✅ Local MongoDB connection ready");
+
+      // Start low-stock email scheduler
+      startLowStockJob();
+
+      // Optional immediate test
+      // const { checkLowStock } = require("./jobs/lowStockJob");
+      // await checkLowStock();
+    } catch (error) {
+      console.error(
+        "❌ Local MongoDB connection failed:",
+        error.message
+      );
+    }
   });
 }
